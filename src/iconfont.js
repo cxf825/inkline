@@ -1,4 +1,5 @@
 import { getSelectedDocument, Rectangle, UI } from 'sketch'
+import { toast } from './panel-ref.js'
 import { createLayerFromData } from 'sketch'
 import BrowserWindow from 'sketch-module-web-view'
 
@@ -66,18 +67,18 @@ function insertSvg(payload) {
   try {
     data = typeof payload === 'string' ? JSON.parse(payload) : payload
   } catch (e) {
-    UI.message('图标数据解析失败')
+    toast('图标数据解析失败')
     return
   }
   const svg = String(data.svg || '')
     .split('currentColor').join('#1F1F1F') // Sketch 不解析 CSS currentColor，替换为固定色
   if (svg.indexOf('<svg') === -1) {
-    UI.message('图标数据无效，请重试')
+    toast('图标数据无效，请重试')
     return
   }
   const doc = getSelectedDocument()
   if (!doc) {
-    UI.message('请先打开一个文档')
+    toast('请先打开一个文档')
     return
   }
 
@@ -85,7 +86,7 @@ function insertSvg(payload) {
   try {
     layer = createLayerFromData(svg, 'svg')
   } catch (e) {
-    UI.message('图标解析失败：' + (e.message || ''))
+    toast('图标解析失败：' + (e.message || ''))
     return
   }
 
@@ -125,5 +126,5 @@ function insertSvg(payload) {
   }
   layer.frame = new Rectangle(Math.round(cx - w / 2), Math.round(cy - h / 2), Math.round(w), Math.round(h))
   layer.name = 'icon-' + String(data.name || 'svg')
-  UI.message('图标已插入画布 ✅')
+  toast('图标已插入画布 ✅')
 }

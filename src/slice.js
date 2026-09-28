@@ -1,20 +1,21 @@
-import { getSelectedDocument, Rectangle, ShapePath, UI } from 'sketch'
+import { getSelectedDocument, Rectangle, ShapePath } from 'sketch'
+import { toast } from './panel-ref.js'
 
 // 图形分割：把选中的画板/图形按 行×列 - 间距 - 页边距 切成网格矩形
 export function runSlice(arg) {
   const doc = getSelectedDocument()
   if (!doc) {
-    UI.message('请先打开一个文档')
+    toast('请先打开一个文档')
     return
   }
   const sel = doc.selectedLayers.layers
   if (sel.length !== 1) {
-    UI.message('请先选中一个要分割的图层（画板/图形，单选）')
+    toast('请先选中一个要分割的图层（画板/图形，单选）')
     return
   }
   const src = sel[0]
   if (src.type === 'Page') {
-    UI.message('请选中画板或图形，不能分割页面')
+    toast('请选中画板或图形，不能分割页面')
     return
   }
 
@@ -33,7 +34,7 @@ export function runSlice(arg) {
   const innerW = f.width - margin * 2 - gap * (cols - 1)
   const innerH = f.height - margin * 2 - gap * (rows - 1)
   if (innerW <= 0 || innerH <= 0) {
-    UI.message('间距或页边距过大，' + cols + '×' + rows + ' 分割后没有剩余空间')
+    toast('间距或页边距过大，' + cols + '×' + rows + ' 分割后没有剩余空间')
     return
   }
   const cw = innerW / cols
@@ -83,5 +84,5 @@ export function runSlice(arg) {
   // 在原图形上分割：格子生成后移除原图形，不建编组（格子平铺在原父级）
   try { src.remove() } catch (e) { /* 保留原图形不影响结果 */ }
 
-  UI.message('已分割为 ' + rows + ' 行 × ' + cols + ' 列，共 ' + cells.length + ' 个图形 ✅')
+  toast('已分割为 ' + rows + ' 行 × ' + cols + ' 列，共 ' + cells.length + ' 个图形 ✅')
 }

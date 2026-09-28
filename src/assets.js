@@ -1,4 +1,5 @@
-import sketch, { UI, getSelectedDocument } from 'sketch'
+import sketch, { getSelectedDocument } from 'sketch'
+import { toast } from './panel-ref.js'
 import { PREFIX } from './util.js'
 
 // 批量切图导出：选中图层导出 PNG @1x/@2x/@3x，矢量图层额外导出 SVG
@@ -35,20 +36,20 @@ function subFolderName(sel, doc) {
 export function exportSlices() {
   const doc = getSelectedDocument()
   if (!doc) {
-    UI.message('请先打开一个文档')
+    toast('请先打开一个文档')
     return
   }
   const sel = doc.selectedLayers.layers.filter(function (l) {
     return l.name.indexOf(PREFIX) !== 0
   })
   if (!sel.length) {
-    UI.message('请先选中要切图的图层（可多选）')
+    toast('请先选中要切图的图层（可多选）')
     return
   }
 
   const dir = pickFolder()
   if (!dir) {
-    UI.message('已取消导出')
+    toast('已取消导出')
     return
   }
 
@@ -85,8 +86,8 @@ export function exportSlices() {
   })
 
   if (okPng > 0) {
-    UI.message('切图完成：' + okPng + ' 个图层（含 @1x/@2x/@3x）' + (okSvg ? ' + ' + okSvg + ' 个 SVG' : '') + (fail ? '，' + fail + ' 个失败' : '') + ' → ' + sub + ' ✅')
+    toast('切图完成：' + okPng + ' 个图层（含 @1x/@2x/@3x）' + (okSvg ? ' + ' + okSvg + ' 个 SVG' : '') + (fail ? '，' + fail + ' 个失败' : '') + ' → ' + sub + ' ✅')
   } else {
-    UI.message('切图失败，请重试')
+    toast('切图失败，请重试')
   }
 }

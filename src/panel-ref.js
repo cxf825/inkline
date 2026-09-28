@@ -30,8 +30,14 @@ export function panelToast(msg) {
   execInPanel('window.toast(' + JSON.stringify(String(msg)) + ')')
 }
 
-// 双通道通知：面板 toast（主）+ 画布 HUD（兜底）
+// 统一通知：面板内黑色 toast（主）；面板不存在时才兜底 Sketch 画布 HUD。
+// 用户要求所有提示都覆盖显示在面板上，不要出现在 Sketch 底部。
+export function toast(msg) {
+  msg = String(msg)
+  if (!panelToast(msg)) UI.message(msg)
+}
+
+// 旧名字保留（palette.js 在用）
 export function notify(msg) {
-  UI.message(msg)
-  panelToast(msg)
+  toast(msg)
 }

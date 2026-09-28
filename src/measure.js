@@ -1,4 +1,5 @@
-import { getSelectedDocument, Text, ShapePath, Rectangle, Group, UI } from 'sketch'
+import { getSelectedDocument, Text, ShapePath, Rectangle, Group } from 'sketch'
+import { toast } from './panel-ref.js'
 import { PREFIX, absRect } from './util.js'
 
 const C_SIZE = '#E24B4AFF' // 尺寸：红
@@ -94,7 +95,7 @@ export function markSizes() {
   const { sel, page } = getSel()
   if (!page) return
   if (!sel.length) {
-    UI.message('请先选择要标注的图层')
+    toast('请先选择要标注的图层')
     return
   }
   const anns = []
@@ -115,7 +116,7 @@ export function markSizes() {
   })
   const g = new Group({ parent: page, layers: anns })
   g.name = PREFIX + '标注-尺寸'
-  UI.message('已标注 ' + sel.length + ' 个图层的尺寸')
+  toast('已标注 ' + sel.length + ' 个图层的尺寸')
 }
 
 // ---------- 标注间距 ----------
@@ -123,7 +124,7 @@ export function markSpacings() {
   const { sel, page } = getSel()
   if (!page) return
   if (!sel.length) {
-    UI.message('请选择图层：选 1 个标注到画板边缘，选 2 个标注两者间距')
+    toast('请选择图层：选 1 个标注到画板边缘，选 2 个标注两者间距')
     return
   }
   const anns = []
@@ -133,7 +134,7 @@ export function markSpacings() {
     let art = sel[0].parent
     while (art && art.type !== 'Artboard' && art.type !== 'SymbolMaster') art = art.parent
     if (!art || (art.type !== 'Artboard' && art.type !== 'SymbolMaster')) {
-      UI.message('该图层不在画板内；请改选 2 个图层来标注间距')
+      toast('该图层不在画板内；请改选 2 个图层来标注间距')
       return
     }
     const ar = absRect(art)
@@ -193,7 +194,7 @@ export function markSpacings() {
   }
   const g = new Group({ parent: page, layers: anns })
   g.name = PREFIX + '标注-间距'
-  UI.message('已标注间距')
+  toast('已标注间距')
 }
 
 // ---------- 标注属性 ----------
@@ -201,7 +202,7 @@ export function markProperties() {
   const { sel, page } = getSel()
   if (!page) return
   if (!sel.length) {
-    UI.message('请先选择要标注属性的图层')
+    toast('请先选择要标注属性的图层')
     return
   }
   const anns = []
@@ -239,7 +240,7 @@ export function markProperties() {
   })
   const g = new Group({ parent: page, layers: anns })
   g.name = PREFIX + '标注-属性'
-  UI.message('已标注 ' + sel.length + ' 个图层的属性')
+  toast('已标注 ' + sel.length + ' 个图层的属性')
 }
 
 // ---------- 清除标注 ----------
@@ -253,7 +254,7 @@ export function clearMarks() {
       n++
     }
   })
-  UI.message(n ? '已清除 ' + n + ' 组标注/便签' : '当前页面没有标注')
+  toast(n ? '已清除 ' + n + ' 组标注/便签' : '当前页面没有标注')
 }
 
 // ---------- 注释便签 ----------
@@ -261,7 +262,7 @@ export function clearMarks() {
 export function addNote() {
   const doc = getSelectedDocument()
   if (!doc) {
-    UI.message('请先打开一个文档')
+    toast('请先打开一个文档')
     return
   }
   const page = doc.selectedPage
@@ -309,5 +310,5 @@ export function addNote() {
 
   const g = new Group({ parent: page, layers: [bg, title, body] })
   g.name = PREFIX + '便签'
-  UI.message('已添加便签，双击文字即可编辑 ✅')
+  toast('已添加便签，双击文字即可编辑 ✅')
 }

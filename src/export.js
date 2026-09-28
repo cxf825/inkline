@@ -1,4 +1,5 @@
-import sketch, { getSelectedDocument, UI } from 'sketch'
+import sketch, { getSelectedDocument } from 'sketch'
+import { toast } from './panel-ref.js'
 import { PREFIX, absRect } from './util.js'
 
 function stamp() {
@@ -91,7 +92,7 @@ export function exportSpec() {
   // 只导出选中的画板，未选中不兜底（用户要求：必须选中画板再导出）
   const arts = doc.selectedLayers.layers.filter(isBoard)
   if (!arts.length) {
-    UI.message('请选中画板导出规范')
+    toast('请选中画板导出规范')
     return
   }
 
@@ -103,7 +104,7 @@ export function exportSpec() {
   panel.setDirectoryURL_(NSURL.fileURLWithPath_(NSHomeDirectory() + '/Desktop'))
   const res = panel.runModal()
   if (Number(res) !== 1) {
-    UI.message('已取消导出')
+    toast('已取消导出')
     return
   }
   const folder = '' + panel.URL().path()
@@ -160,7 +161,7 @@ export function exportSpec() {
   const htmlPath = folder + '/index.html'
   writeText(htmlPath, html)
   NSWorkspace.sharedWorkspace().openURL_(NSURL.fileURLWithPath(htmlPath))
-  UI.message('已导出 ' + data.length + ' 个画板 → ' + folder)
+  toast('已导出 ' + data.length + ' 个画板 → ' + folder)
 }
 
 // 收集画板范围内的 Inkline 标注（线条 + 文字标签），用于在规范页中还原

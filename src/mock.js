@@ -1,4 +1,5 @@
 import sketch, { Image, UI, getSelectedDocument } from 'sketch'
+import { toast } from './panel-ref.js'
 import BrowserWindow from 'sketch-module-web-view'
 
 // ---------------- Mock 文本数据（纯本地生成，无网络依赖） ----------------
@@ -61,12 +62,12 @@ const TEXT_GEN = {
 export function mockText(type) {
   const doc = getSelectedDocument()
   if (!doc) {
-    UI.message('请先打开一个文档')
+    toast('请先打开一个文档')
     return
   }
   const sel = doc.selectedLayers.layers.filter(function (l) { return l.type === 'Text' })
   if (!sel.length) {
-    UI.message('请先选中文本图层')
+    toast('请先选中文本图层')
     return
   }
   let ok = 0
@@ -78,7 +79,7 @@ export function mockText(type) {
       ok++
     } catch (e) { /* 单个图层失败不影响其余 */ }
   })
-  UI.message('已填充 ' + ok + ' 个文本图层 ✅')
+  toast('已填充 ' + ok + ' 个文本图层 ✅')
 }
 
 // ---------------- 自定义词库（对齐 Kitchen 自定义文本填充） ----------------
@@ -105,17 +106,17 @@ export function mockTextCustom() {
   const words = readWords()
   if (!words.length) {
     openWordsEditor()
-    UI.message('自定义词库还是空的，先在弹出的编辑器里添加词句吧')
+    toast('自定义词库还是空的，先在弹出的编辑器里添加词句吧')
     return
   }
   const doc = getSelectedDocument()
   if (!doc) {
-    UI.message('请先打开一个文档')
+    toast('请先打开一个文档')
     return
   }
   const sel = doc.selectedLayers.layers.filter(function (l) { return l.type === 'Text' })
   if (!sel.length) {
-    UI.message('请先选中文本图层')
+    toast('请先选中文本图层')
     return
   }
   // 洗牌后循环取用，避免相邻图层重复
@@ -134,7 +135,7 @@ export function mockTextCustom() {
       ok++
     } catch (e) { /* 单个失败不中断 */ }
   })
-  UI.message('已用自定义词库填充 ' + ok + ' 个文本图层 ✅')
+  toast('已用自定义词库填充 ' + ok + ' 个文本图层 ✅')
 }
 
 const EDITOR_ID = 'inkline.words.v1'
@@ -176,7 +177,7 @@ export function openWordsEditor() {
       const arr = JSON.parse(String(payload))
       if (Array.isArray(arr)) {
         saveCustomWords(arr.map(String).filter(function (w) { return w.trim().length > 0 }))
-        UI.message('词库已保存（' + arr.length + ' 条）✅')
+        toast('词库已保存（' + arr.length + ' 条）✅')
       }
       win.close()
     } catch (e) {
@@ -202,7 +203,7 @@ export function chooseImageDir() {
   if (Number(panel.runModal()) === 1) {
     const p = String(panel.URLs().firstObject().path())
     NSUserDefaults.standardUserDefaults().setObject_forKey_(p, DIR_KEY)
-    UI.message('图片素材文件夹已设置：' + p)
+    toast('图片素材文件夹已设置：' + p)
   }
 }
 
@@ -234,12 +235,12 @@ function fillFromLocal(layer) {
     dir = String(NSUserDefaults.standardUserDefaults().stringForKey_(DIR_KEY) || '')
   }
   if (!dir) {
-    UI.message('未设置图片素材文件夹')
+    toast('未设置图片素材文件夹')
     return false
   }
   const files = localImageFiles(dir)
   if (!files.length) {
-    UI.message('素材文件夹里没有找到图片（支持 jpg/png/gif/webp 等）')
+    toast('素材文件夹里没有找到图片（支持 jpg/png/gif/webp 等）')
     return false
   }
   const file = dir + '/' + files[Math.floor(Math.random() * files.length)]
@@ -289,12 +290,12 @@ function isImageTarget(layer) {
 export function mockImage(kind) {
   const doc = getSelectedDocument()
   if (!doc) {
-    UI.message('请先打开一个文档')
+    toast('请先打开一个文档')
     return
   }
   const targets = doc.selectedLayers.layers.filter(isImageTarget)
   if (!targets.length) {
-    UI.message('请先选中要填充的图层（矩形/形状/图片）')
+    toast('请先选中要填充的图层（矩形/形状/图片）')
     return
   }
   let ok = 0
@@ -322,8 +323,8 @@ export function mockImage(kind) {
     }
   })
   if (ok > 0) {
-    UI.message('已填充 ' + ok + ' 个图层' + (fail ? '（' + fail + ' 个失败）' : '') + ' ✅')
+    toast('已填充 ' + ok + ' 个图层' + (fail ? '（' + fail + ' 个失败）' : '') + ' ✅')
   } else {
-    UI.message('图片获取失败，请检查网络后重试')
+    toast('图片获取失败，请检查网络后重试')
   }
 }
