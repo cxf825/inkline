@@ -17,9 +17,8 @@
     border-radius: 10px;
   }
   /* ---------- 横向工具栏 ---------- */
-  /* 拖动方案：JS 手动拖动（mousedown → 屏幕坐标 → 插件 setPosition）。
-     原生 -webkit-app-region 在 Sketch 内嵌 WebView 不可靠（拖一段就吸附/失效），
-     故不再使用；墨字 Logo 和空白处均可拖，按钮点击不受影响 */
+  /* 拖动方案：库内置的 data-app-region 机制（系统级 60fps 跟手移动）。
+     .bar / .logo 标 drag；按钮标 no-drag（子元素会向上查找属性） */
   .bar {
     flex: none;
     height: 56px;
@@ -196,24 +195,24 @@
     </defs>
   </svg>
 
-  <div class="bar">
-    <div class="logo" id="logoBtn" title="按住拖动工具栏">墨</div>
-    <div class="tbtn" data-action="markSizes" title="标注尺寸"><svg class="ic"><use href="#i-size"/></svg><span class="lbl">尺寸</span></div>
-    <div class="tbtn" data-action="markSpacings" title="标注间距"><svg class="ic"><use href="#i-spacing"/></svg><span class="lbl">间距</span></div>
-    <div class="tbtn" data-action="markProperties" title="标注属性"><svg class="ic"><use href="#i-prop"/></svg><span class="lbl">属性</span></div>
-    <div class="tbtn" data-action="addNote" title="注释便签"><svg class="ic"><use href="#i-note"/></svg><span class="lbl">便签</span></div>
-    <div class="tbtn" data-action="clearMarks" title="清除标注"><svg class="ic"><use href="#i-clear"/></svg><span class="lbl">清除</span></div>
+  <div class="bar" data-app-region="drag">
+    <div class="logo" id="logoBtn" data-app-region="drag" title="按住拖动工具栏">墨</div>
+    <div class="tbtn" data-app-region="no-drag" data-action="markSizes" title="标注尺寸"><svg class="ic"><use href="#i-size"/></svg><span class="lbl">尺寸</span></div>
+    <div class="tbtn" data-app-region="no-drag" data-action="markSpacings" title="标注间距"><svg class="ic"><use href="#i-spacing"/></svg><span class="lbl">间距</span></div>
+    <div class="tbtn" data-app-region="no-drag" data-action="markProperties" title="标注属性"><svg class="ic"><use href="#i-prop"/></svg><span class="lbl">属性</span></div>
+    <div class="tbtn" data-app-region="no-drag" data-action="addNote" title="注释便签"><svg class="ic"><use href="#i-note"/></svg><span class="lbl">便签</span></div>
+    <div class="tbtn" data-app-region="no-drag" data-action="clearMarks" title="清除标注"><svg class="ic"><use href="#i-clear"/></svg><span class="lbl">清除</span></div>
     <div class="sep"></div>
-    <div class="tbtn" data-action="exportSpec" title="导出离线规范"><svg class="ic"><use href="#i-spec"/></svg><span class="lbl">规范</span></div>
-    <div class="tbtn" data-action="exportSlices" title="切图导出"><svg class="ic"><use href="#i-slice"/></svg><span class="lbl">切图</span></div>
-    <div class="tbtn" id="sliceBtn" data-drawer="slice" title="图形分割（按行列/间距/边距切成网格）"><svg class="ic"><use href="#i-divide"/></svg><span class="lbl">分割</span></div>
+    <div class="tbtn" data-app-region="no-drag" data-action="exportSpec" title="导出离线规范"><svg class="ic"><use href="#i-spec"/></svg><span class="lbl">规范</span></div>
+    <div class="tbtn" data-app-region="no-drag" data-action="exportSlices" title="切图导出"><svg class="ic"><use href="#i-slice"/></svg><span class="lbl">切图</span></div>
+    <div class="tbtn" data-app-region="no-drag" id="sliceBtn" data-drawer="slice" title="图形分割（按行列/间距/边距切成网格）"><svg class="ic"><use href="#i-divide"/></svg><span class="lbl">分割</span></div>
     <div class="sep"></div>
-    <div class="tbtn" data-action="iconLibrary" title="图标库"><svg class="ic"><use href="#i-icon"/></svg><span class="lbl">图标</span></div>
-    <div class="tbtn" id="mockTextBtn" data-drawer="mockText" title="Mock 文本填充"><svg class="ic"><use href="#i-text"/></svg><span class="lbl">文本</span></div>
-    <div class="tbtn" id="mockImgBtn" data-drawer="mockImg" title="Mock 图片填充"><svg class="ic"><use href="#i-image"/></svg><span class="lbl">图片</span></div>
+    <div class="tbtn" data-app-region="no-drag" data-action="iconLibrary" title="图标库"><svg class="ic"><use href="#i-icon"/></svg><span class="lbl">图标</span></div>
+    <div class="tbtn" data-app-region="no-drag" id="mockTextBtn" data-drawer="mockText" title="Mock 文本填充"><svg class="ic"><use href="#i-text"/></svg><span class="lbl">文本</span></div>
+    <div class="tbtn" data-app-region="no-drag" id="mockImgBtn" data-drawer="mockImg" title="Mock 图片填充"><svg class="ic"><use href="#i-image"/></svg><span class="lbl">图片</span></div>
     <div class="sep"></div>
-    <div class="tbtn" id="paletteBtn" data-drawer="palette" title="色板"><svg class="ic"><use href="#i-palette"/></svg><span class="lbl">色板</span></div>
-    <div class="tbtn" id="settingsBtn" data-drawer="settings" title="设置"><svg class="ic"><use href="#i-settings"/></svg><span class="lbl">设置</span></div>
+    <div class="tbtn" data-app-region="no-drag" id="paletteBtn" data-drawer="palette" title="色板"><svg class="ic"><use href="#i-palette"/></svg><span class="lbl">色板</span></div>
+    <div class="tbtn" data-app-region="no-drag" id="settingsBtn" data-drawer="settings" title="设置"><svg class="ic"><use href="#i-settings"/></svg><span class="lbl">设置</span></div>
     <div class="spacer"></div>
     <div class="tbtn icon-only close" id="closeBtn" title="关闭工具栏"><svg class="ic"><use href="#i-close"/></svg></div>
   </div>
@@ -288,28 +287,10 @@
       t.classList.add('show')
       setTimeout(function () { t.classList.remove('show') }, 1500)
     }
-    /* ---------- 手动拖动窗口 ----------
-       按住「墨」Logo 或工具栏空白处拖动；鼠标屏幕坐标推给插件侧换算位移 */
-    var dragActive = false
-    var bar = document.querySelector('.bar')
-    bar.addEventListener('mousedown', function (e) {
-      if (e.button !== 0) return
-      if (e.target.closest('.tbtn')) return // 按钮不触发拖动
-      dragActive = true
-      window.postMessage('winDragStart', JSON.stringify({ x: e.screenX, y: e.screenY }))
-      e.preventDefault()
-    })
-    window.addEventListener('mousemove', function (e) {
-      if (!dragActive) return
-      window.postMessage('winDragMove', JSON.stringify({ x: e.screenX, y: e.screenY }))
-    })
-    function endDrag() {
-      if (!dragActive) return
-      dragActive = false
-      window.postMessage('winDragEnd', '')
-    }
-    window.addEventListener('mouseup', endDrag)
-    window.addEventListener('blur', endDrag)
+    /* ---------- 拖动说明 ----------
+       拖动由 sketch-module-web-view 内置机制处理：元素标 data-app-region="drag"
+       （见 .bar / .logo），库按住后以系统 60fps 移动窗口；按钮标 no-drag。
+       此处不写任何拖动 JS。 */
 
     /* 「墨」Logo 是拖拽把手，不绑定点击；使用帮助入口在「设置」抽屉里 */
     document.getElementById('closeBtn').onclick = function () {

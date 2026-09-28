@@ -203,31 +203,6 @@ export default function () {
     }
   })
 
-  // 手动拖动：页面 mousedown/mousemove 推送鼠标屏幕坐标，这里按差值移动窗口。
-  // getBounds/setPosition 的 y 语义一致（无论是否翻转），只做差值运算即可
-  let dragOrigin = null
-  webContents.on('winDragStart', function (pos) {
-    try {
-      const b = browserWindow.getBounds()
-      dragOrigin = { bx: b.x, by: b.y, mx: pos.x, my: pos.y }
-    } catch (e) {
-      dragOrigin = null
-    }
-  })
-  webContents.on('winDragMove', function (pos) {
-    if (!dragOrigin) return
-    try {
-      browserWindow.setPosition(
-        Math.round(dragOrigin.bx + (pos.x - dragOrigin.mx)),
-        Math.round(dragOrigin.by + (pos.y - dragOrigin.my)),
-        false
-      )
-    } catch (e) { /* ignore */ }
-  })
-  webContents.on('winDragEnd', function () {
-    dragOrigin = null
-  })
-
   browserWindow.once('ready-to-show', function () {
     browserWindow.show()
     // 显式提到浮动层级之上（比默认 floating 更高一级），确保永远浮在 Sketch 主窗口之上

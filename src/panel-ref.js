@@ -3,6 +3,7 @@
 // 把 navigationDelegate 的 wasReady 重置为 0，导致 executeJavaScript 永远等待
 // ready-to-show 而静默失效（v0.2.0 样式/色板无反应的根因）。
 import { UI } from 'sketch'
+import { showBelow } from './toast.js'
 
 let panel = null
 
@@ -25,9 +26,15 @@ export function execInPanel(js) {
   }
 }
 
-// 在面板内弹 toast（Sketch 画布左下角的 UI.message 容易被忽略）
+// 面板下方的黑色 toast（独立透明小窗口，悬浮在画布上，不挡操作）
 export function panelToast(msg) {
-  execInPanel('window.toast(' + JSON.stringify(String(msg)) + ')')
+  if (!panel) return false
+  try {
+    showBelow(panel, msg)
+    return true
+  } catch (e) {
+    return false
+  }
 }
 
 // 统一通知：面板内黑色 toast（主）；面板不存在时才兜底 Sketch 画布 HUD。
