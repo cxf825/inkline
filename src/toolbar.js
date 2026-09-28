@@ -163,29 +163,37 @@ export default function () {
   // 严禁改走 getWebview()（会重置 webview delegate 导致 executeJavaScript 静默失效）
   setPanel(browserWindow)
 
-  // ---------- 跟随 Sketch 主窗口 ----------
-  // 最小化 Sketch → 面板隐藏；恢复 → 面板回来；
-  // 主窗口全关（Sketch 退到后台）→ 面板一并关闭。
+  // ---------- 跟随 Sketch ----------
+  // 用 NSDocumentController 数文档（mainWindow 会受面板类窗口干扰，v0.4.9 失效）：
+  //   没有任何打开文档 → 面板关闭
+  //   有文档但窗口全部最小化 → 面板隐藏
+  //   有可见文档窗口 → 确保面板显示
   // 库自身 movable-area 也用 setInterval 轮询，插件进程内定时器可用
-  const app = NSApplication.sharedApplication()
-  const OUR_TITLES = ['Inkline · 墨斗', 'Inkline 图标库', 'Inkline · 自定义词库']
   let hiddenByFollow = false
+  function docWindowState() {
+    const docs = NSDocumentController.sharedDocumentController().documents()
+    const n = docs.count()
+    if (n === 0) return 'none'
+    for (let i = 0; i < n; i++) {
+      const wcs = docs.objectAtIndex(i).windowControllers()
+      for (let j = 0; j < wcs.count(); j++) {
+        const w = wcs.objectAtIndex(j).window()
+        if (w && !w.isMiniaturized()) return 'visible'
+      }
+    }
+    return 'minimized'
+  }
   const followTimer = setInterval(function () {
     try {
-      const main = app.mainWindow()
-      if (main) {
-        const t = String(main.title() || '')
-        if (OUR_TITLES.indexOf(t) !== -1) return // 主窗口是我们自己的窗口，不处理
+      const st = docWindowState()
+      if (st === 'visible') {
         if (hiddenByFollow) {
           hiddenByFollow = false
           try { browserWindow.show() } catch (e) { /* ignore */ }
           try { browserWindow.setAlwaysOnTop(true, 'floating', 1) } catch (e) { /* ignore */ }
           try { browserWindow.moveTop() } catch (e) { /* ignore */ }
         }
-        return
-      }
-      // 没有主窗口：有最小化窗口 → 跟随隐藏；一个都没有 → Sketch 已全部关闭 → 关面板
-      if (app.miniaturizedWindows().count() > 0) {
+      } else if (st === 'minimized') {
         if (!hiddenByFollow) {
           hiddenByFollow = true
           try { browserWindow.hide() } catch (e) { /* ignore */ }
