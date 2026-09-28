@@ -170,6 +170,7 @@ export default function () {
   //   有可见文档窗口 → 确保面板显示
   // 库自身 movable-area 也用 setInterval 轮询，插件进程内定时器可用
   let hiddenByFollow = false
+  const OUR_TITLES = ['Inkline · 墨斗', 'Inkline 图标库', 'Inkline · 自定义词库']
   function docWindowState() {
     const docs = NSDocumentController.sharedDocumentController().documents()
     const n = docs.count()
@@ -183,9 +184,9 @@ export default function () {
     }
     return 'minimized'
   }
-  function checkFollow() {
+  function checkFollow(forceMin) {
     try {
-      const st = docWindowState()
+      const st = forceMin ? 'minimized' : docWindowState()
       if (st === 'visible') {
         if (hiddenByFollow) {
           hiddenByFollow = false
@@ -204,20 +205,33 @@ export default function () {
       }
     } catch (e) { /* ignore */ }
   }
-  const followTimer = setInterval(checkFollow, 400)
+  const followTimer = setInterval(checkFollow, 150)
 
   // 双保险：系统通知直接监听窗口最小化/恢复/关闭（JS 定时器万一失效也能即时响应）；
-  // checkFollow 幂等，重复触发无副作用
+  // checkFollow 幂等，重复触发无副作用。
+  // 关键：WillMiniaturize 在最小化动画开始【前】触发——面板即时隐藏，
+  // 不等精灵动画结束（DidMiniaturize 要等约 0.3-0.5s 动画完成才发，v0.4.11 的延时根因）
   const NC = NSNotificationCenter.defaultCenter()
   const followObservers = []
   ;[
+    'NSWindowWillMiniaturizeNotification',
     'NSWindowDidMiniaturizeNotification',
     'NSWindowDidDeminiaturizeNotification',
     'NSWindowWillCloseNotification',
   ].forEach(function (name) {
     try {
       followObservers.push(
-        NC.addObserverForName_object_queue_block_(name, null, null, function () {
+        NC.addObserverForName_object_queue_block_(name, null, null, function (notif) {
+          if (name === 'NSWindowWillMiniaturizeNotification') {
+            // 最小化动画开始前触发：立即跟随隐藏，不等动画结束。
+            // 排除我们自己的窗口（墨字面板/图标库/词库）
+            try {
+              const w = notif && notif.object()
+              if (w && OUR_TITLES.indexOf(String(w.title() || '')) !== -1) return
+            } catch (e) { /* ignore */ }
+            checkFollow(true)
+            return
+          }
           checkFollow()
         })
       )

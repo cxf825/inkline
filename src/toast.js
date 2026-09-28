@@ -26,6 +26,11 @@ function ensure(x, y, w) {
     try { win.setPosition(x, y, false) } catch (e) { /* ignore */ }
     return win
   }
+  // 记住创建时的目标位置：透明窗口会被库注入 NSToolbar 而撑高 frame，
+  // 构造时的 x/y 会被顶偏——首次 show 后必须按同语义补一次定位
+  // （与 toolbar.js ready-to-show 后二次定位同款修复）
+  const x0 = x
+  const y0 = y
   win = new BrowserWindow({
     identifier: IDENTIFIER,
     width: w,
@@ -50,6 +55,7 @@ function ensure(x, y, w) {
     // 关键：toast 只是提示，永远不接收鼠标事件，不挡下方画布操作
     try { win.setIgnoreMouseEvents(true) } catch (e) { /* ignore */ }
     win.show()
+    try { win.setPosition(x0, y0, false) } catch (e) { /* ignore */ }
   })
   win.on('closed', function () {
     win = null
