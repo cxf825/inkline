@@ -17,7 +17,7 @@
     border-radius: 10px;
   }
   /* ---------- 横向工具栏 ---------- */
-  /* 整条工具栏 = 原生拖拽区：空白处按住即可拖动窗口，且不会选中文字；
+  /* 工具栏 = 原生拖拽区：空白处按住即可拖动窗口，且不会选中文字；
      按钮单独声明 no-drag，保持点击/悬停正常 */
   .bar {
     flex: none;
@@ -29,8 +29,9 @@
     background: #FAF9F6;
     -webkit-app-region: drag;
     app-region: drag;
-    cursor: grab;
+    cursor: move;
   }
+  /* 「墨」Logo = 主拖拽把手：面积大好按住；帮助入口已移到设置抽屉 */
   .logo {
     flex: none;
     width: 34px; height: 34px;
@@ -42,9 +43,9 @@
     text-align: center;
     font-weight: 600;
     margin-right: 8px;
-    cursor: pointer;
-    -webkit-app-region: no-drag;
-    app-region: no-drag;
+    cursor: move;
+    -webkit-app-region: drag;
+    app-region: drag;
   }
   .tbtn {
     flex: none;
@@ -201,7 +202,7 @@
   </svg>
 
   <div class="bar">
-    <div class="logo" id="logoBtn" title="Inkline · 墨斗（使用帮助）">墨</div>
+    <div class="logo" id="logoBtn" title="按住拖动工具栏">墨</div>
     <div class="tbtn" data-action="markSizes" title="标注尺寸"><svg class="ic"><use href="#i-size"/></svg><span class="lbl">尺寸</span></div>
     <div class="tbtn" data-action="markSpacings" title="标注间距"><svg class="ic"><use href="#i-spacing"/></svg><span class="lbl">间距</span></div>
     <div class="tbtn" data-action="markProperties" title="标注属性"><svg class="ic"><use href="#i-prop"/></svg><span class="lbl">属性</span></div>
@@ -278,6 +279,7 @@
       <div class="chips">
         <div class="chip" id="optText" data-run='{"name":"setBarStyle","arg":"text"}'>图标 + 文字</div>
         <div class="chip" id="optIcon" data-run='{"name":"setBarStyle","arg":"icon"}'>仅图标</div>
+        <div class="chip" data-run='{"name":"help"}' title="版本与功能说明">使用帮助…</div>
       </div>
     </div>
   </div>
@@ -291,9 +293,8 @@
       t.classList.add('show')
       setTimeout(function () { t.classList.remove('show') }, 1500)
     }
-    document.getElementById('logoBtn').onclick = function () {
-      window.postMessage('action', 'help')
-    }
+    /* 「墨」Logo 是拖拽把手（原生 app-region: drag），不绑定点击；
+       使用帮助入口在「设置」抽屉里 */
     document.getElementById('closeBtn').onclick = function () {
       window.postMessage('close', '')
     }
