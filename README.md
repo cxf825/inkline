@@ -1,7 +1,8 @@
 # Inkline · 墨斗 🖌 — Sketch 标注 / 交付 / 素材插件
 
 Kitchen + Sketch Measure 组合体：在设计稿上"弹墨线"——标注、规范交付、图标与素材填充。
-（原项目名 Kitchen3，因与蚂蚁 Kitchen 重名，更名 Inkline / 墨斗）
+
+Kitchen 和 Sketch Measure 两大经典插件已不再支持新版 Sketch，原有标注、切图、尺寸查看等功能无法继续使用。本插件基于 WorkBuddy 开发，命名 **Inkline・墨斗**，复刻并优化设计稿标注、导出切图、查看图层信息等交付能力，为 Sketch 用户提供稳定可用的替代方案。
 
 ## 开发进度
 
