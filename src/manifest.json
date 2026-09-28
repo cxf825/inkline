@@ -1,0 +1,108 @@
+{
+  "compatibleVersion": 3,
+  "bundleVersion": 16,
+  "name": "Inkline",
+  "author": "WorkBuddy",
+  "description": "Inkline 墨斗 — 标注、离线规范导出、Iconfont、Mock 数据填充",
+  "commands": [
+    {
+      "name": "打开 / 关闭工具栏",
+      "identifier": "inkline.toolbar",
+      "script": "./toolbar.js",
+      "shortcut": "ctrl cmd b"
+    },
+    {
+      "name": "标注尺寸",
+      "identifier": "inkline.mark.sizes",
+      "script": "./measure.js",
+      "shortcut": "ctrl shift 2",
+      "handlers": { "run": "markSizes" }
+    },
+    {
+      "name": "标注间距",
+      "identifier": "inkline.mark.spacings",
+      "script": "./measure.js",
+      "shortcut": "ctrl shift 3",
+      "handlers": { "run": "markSpacings" }
+    },
+    {
+      "name": "标注属性",
+      "identifier": "inkline.mark.properties",
+      "script": "./measure.js",
+      "shortcut": "ctrl shift 4",
+      "handlers": { "run": "markProperties" }
+    },
+    {
+      "name": "清除全部标注",
+      "identifier": "inkline.clear.marks",
+      "script": "./measure.js",
+      "shortcut": "ctrl shift 5",
+      "handlers": { "run": "clearMarks" }
+    },
+    {
+      "name": "注释便签",
+      "identifier": "inkline.note.add",
+      "script": "./measure.js",
+      "shortcut": "ctrl alt n",
+      "handlers": { "run": "addNote" }
+    },
+    {
+      "name": "导出离线规范 (HTML)",
+      "identifier": "inkline.export.spec",
+      "script": "./export.js",
+      "shortcut": "ctrl shift e",
+      "handlers": { "run": "exportSpec" }
+    },
+    {
+      "name": "切图导出 (@1x/@2x/@3x + SVG)",
+      "identifier": "inkline.export.slices",
+      "script": "./assets.js",
+      "shortcut": "ctrl alt e",
+      "handlers": { "run": "exportSlices" }
+    },
+    {
+      "name": "图标库",
+      "identifier": "inkline.icons",
+      "script": "./iconfont.js",
+      "shortcut": "ctrl alt i",
+      "handlers": { "run": "openIconLibrary" }
+    },
+    {
+      "name": "Mock 文本填充",
+      "identifier": "inkline.mock.text",
+      "script": "./mock.js",
+      "shortcut": "ctrl alt t",
+      "handlers": { "run": "mockText" }
+    },
+    {
+      "name": "Mock 图片填充",
+      "identifier": "inkline.mock.image",
+      "script": "./mock.js",
+      "shortcut": "ctrl alt m",
+      "handlers": { "run": "mockImage" }
+    },
+    {
+      "name": "使用帮助",
+      "identifier": "inkline.help",
+      "script": "./help.js"
+    }
+  ],
+  "menu": {
+    "title": "Inkline · 墨斗",
+    "items": [
+      "inkline.toolbar",
+      "inkline.mark.sizes",
+      "inkline.mark.spacings",
+      "inkline.mark.properties",
+      "inkline.clear.marks",
+      "inkline.note.add",
+      "inkline.export.spec",
+      "inkline.export.slices",
+      "inkline.icons",
+      "inkline.mock.text",
+      "inkline.mock.image",
+      "-",
+      "inkline.help"
+    ]
+  }
+}

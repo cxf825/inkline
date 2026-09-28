@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #FAF9F6;
+    color: #2B2B2B;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 14px;
+  }
+  h2 { font-size: 14px; margin-bottom: 4px; }
+  .hint { font-size: 12px; color: #999; margin-bottom: 10px; line-height: 1.6; }
+  textarea {
+    flex: 1;
+    border: 1px solid #E5E2DA;
+    border-radius: 8px;
+    background: #fff;
+    padding: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+  }
+  textarea:focus { border-color: #6B21A8; }
+  .row { display: flex; gap: 8px; margin-top: 10px; }
+  button {
+    flex: 1;
+    padding: 9px 0;
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid #E5E2DA;
+    background: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: #F1EEE6; }
+  #save {
+    background: #6B21A8;
+    border-color: #6B21A8;
+    color: #fff;
+  }
+  #save:hover { background: #58187F; }
+  #count { font-size: 12px; color: #6B21A8; margin-top: 8px; text-align: right; }
+</style>
+</head>
+<body>
+  <h2>自定义词库</h2>
+  <div class="hint">一行一条词句。填充时每个选中的文本图层随机取一条（相邻不重复）。</div>
+  <textarea id="box" spellcheck="false" placeholder="例如：&#10;新品上市，全场 8 折&#10;限时优惠，先到先得&#10;会员专享福利"></textarea>
+  <div id="count"></div>
+  <div class="row">
+    <button id="cancel">取消</button>
+    <button id="save">保存</button>
+  </div>
+  <script>
+    var box = document.getElementById('box')
+    var count = document.getElementById('count')
+    function refreshCount() {
+      var n = box.value.split('\n').filter(function (l) { return l.trim().length > 0 }).length
+      count.textContent = n + ' 条词句'
+    }
+    box.oninput = refreshCount
+    window.__setWords = function (arr) {
+      box.value = (arr || []).join('\n')
+      refreshCount()
+    }
+    try { window.postMessage('requestWords', '') } catch (e) { /* 浏览器直开时无 Sketch 通信桥，忽略 */ }
+    document.getElementById('save').onclick = function () {
+      var arr = box.value.split('\n').map(function (l) { return l.trim() }).filter(function (l) { return l.length > 0 })
+      window.postMessage('saveWords', JSON.stringify(arr))
+    }
+    document.getElementById('cancel').onclick = function () {
+      window.postMessage('close', '')
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #FAF9F6;
+    color: #2B2B2B;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  /* ---------- 横向工具栏 ---------- */
+  .bar {
+    flex: none;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 10px;
+    background: #FAF9F6;
+  }
+  .logo {
+    flex: none;
+    width: 34px; height: 34px;
+    background: #C0392B;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    line-height: 34px;
+    text-align: center;
+    font-weight: 600;
+    margin-right: 8px;
+    cursor: pointer;
+  }
+  .tbtn {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    width: 44px; height: 46px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #444;
+    transition: background 0.12s;
+  }
+  .tbtn:hover { background: #EDEAE1; }
+  .tbtn:active { background: #E2DED2; }
+  .tbtn.active { background: #6B21A81A; color: #6B21A8; }
+  /* 文字 + 三角 同一行 */
+  .tlbl {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 12px;
+  }
+  .tbtn .lbl { font-size: 10px; line-height: 1; }
+  /* 图标模式：仅隐藏文字，按钮尺寸不变 → 两种模式工具栏等长 */
+  body.mode-icon .tbtn .lbl { display: none; }
+  /* 无文字的特殊按钮 */
+  .icon-only { width: 34px; height: 38px; }
+  .sep {
+    flex: none;
+    width: 1px; height: 24px;
+    background: #E0DCD2;
+    margin: 0 5px;
+  }
+  .spacer { flex: 1; }
+  .close { color: #999; }
+  .close:hover { background: #C0392B1A; color: #C0392B; }
+  /* 统一线性图标 */
+  .ic {
+    width: 22px; height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: none;
+  }
+
+  /* ---------- 下方抽屉区 ---------- */
+  .drawer {
+    flex: 1;
+    display: none;
+    overflow-y: auto;
+    border-top: 1px solid #E5E2DA;
+    padding: 10px 12px;
+  }
+  .drawer.visible { display: block; }
+  .drawer-title { font-size: 11px; color: #999; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1px solid #E5E2DA;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .chip:hover { background: #6B21A81A; border-color: #6B21A8; color: #6B21A8; }
+  .chip.on { background: #6B21A81A; border-color: #6B21A8; color: #6B21A8; }
+  .drawer-sub { font-size: 11px; color: #999; margin: 8px 0 6px; }
+  .cchip {
+    width: 24px; height: 22px;
+    border-radius: 5px;
+    border: 1px solid rgba(0,0,0,0.12);
+    cursor: pointer;
+    position: relative;
+  }
+  .cchip .del {
+    position: absolute;
+    top: -7px; right: -7px;
+    width: 14px; height: 14px;
+    border-radius: 7px;
+    background: #C0392B;
+    color: #fff;
+    font-size: 10px;
+    line-height: 14px;
+    text-align: center;
+    display: none;
+  }
+  .cchip:hover .del { display: block; }
+  .empty { font-size: 11px; color: #C9C4B8; }
+
+  .slice-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .slice-row label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #666;
+  }
+  .slice-row input[type=number] {
+    width: 46px;
+    padding: 4px 5px;
+    border: 1px solid #E5E2DA;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  #sliceGo { font-weight: 600; }
+
+  #toast {
+    position: fixed;
+    left: 50%; bottom: 12px;
+    transform: translateX(-50%);
+    background: rgba(31,31,31,0.9);
+    color: #fff;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body class="mode-text">
+  <!-- 统一线性图标库 -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <symbol id="i-size" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M8 8l-4 4 4 4"/><path d="M16 8l4 4-4 4"/></symbol>
+      <symbol id="i-spacing" viewBox="0 0 24 24"><path d="M12 4v16"/><path d="M8 8l4-4 4 4"/><path d="M8 16l4 4 4-4"/></symbol>
+      <symbol id="i-prop" viewBox="0 0 24 24"><path d="M7 17L12 6l5 11"/><path d="M8.8 13.2h6.4"/></symbol>
+      <symbol id="i-note" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4h13A1.5 1.5 0 0120 5.5v9a1.5 1.5 0 01-1.5 1.5H10l-5 4v-4h-.5A1.5 1.5 0 014 14.5z"/></symbol>
+      <symbol id="i-clear" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6.5 7l1 13h9l1-13"/><path d="M10 11v6M14 11v6"/></symbol>
+      <symbol id="i-spec" viewBox="0 0 24 24"><path d="M12 4v10"/><path d="M8 10l4 4 4-4"/><path d="M4 16v3h16v-3"/></symbol>
+      <symbol id="i-slice" viewBox="0 0 24 24"><path d="M7 3v14h14"/><path d="M3 7h14v14"/></symbol>
+      <symbol id="i-icon" viewBox="0 0 24 24"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/></symbol>
+      <symbol id="i-text" viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="1.5"/><path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4.5"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><circle cx="9" cy="10" r="1.6"/><path d="M5.5 17l4-4 3 3 2.5-2.5 3.5 3.5"/></symbol>
+      <symbol id="i-palette" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9"/><circle cx="16.5" cy="7" r="2.2"/><path d="M20 7h0.01"/><path d="M4 17h2"/><circle cx="9.5" cy="17" r="2.2"/><path d="M13 17h7"/></symbol>
+      <symbol id="i-divide" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M12 3.5v17"/><path d="M3.5 12h17"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="bar">
+    <div class="logo" id="logoBtn" title="Inkline · 墨斗（使用帮助）">墨</div>
+    <div class="tbtn" data-action="markSizes" title="标注尺寸"><svg class="ic"><use href="#i-size"/></svg><span class="lbl">尺寸</span></div>
+    <div class="tbtn" data-action="markSpacings" title="标注间距"><svg class="ic"><use href="#i-spacing"/></svg><span class="lbl">间距</span></div>
+    <div class="tbtn" data-action="markProperties" title="标注属性"><svg class="ic"><use href="#i-prop"/></svg><span class="lbl">属性</span></div>
+    <div class="tbtn" data-action="addNote" title="注释便签"><svg class="ic"><use href="#i-note"/></svg><span class="lbl">便签</span></div>
+    <div class="tbtn" data-action="clearMarks" title="清除标注"><svg class="ic"><use href="#i-clear"/></svg><span class="lbl">清除</span></div>
+    <div class="sep"></div>
+    <div class="tbtn" data-action="exportSpec" title="导出离线规范"><svg class="ic"><use href="#i-spec"/></svg><span class="lbl">规范</span></div>
+    <div class="tbtn" data-action="exportSlices" title="切图导出"><svg class="ic"><use href="#i-slice"/></svg><span class="lbl">切图</span></div>
+    <div class="tbtn" id="sliceBtn" data-drawer="slice" title="图形分割（按行列/间距/边距切成网格）"><svg class="ic"><use href="#i-divide"/></svg><span class="lbl">分割</span></div>
+    <div class="sep"></div>
+    <div class="tbtn" data-action="iconLibrary" title="图标库"><svg class="ic"><use href="#i-icon"/></svg><span class="lbl">图标</span></div>
+    <div class="tbtn" id="mockTextBtn" data-drawer="mockText" title="Mock 文本填充"><svg class="ic"><use href="#i-text"/></svg><span class="lbl">文本</span></div>
+    <div class="tbtn" id="mockImgBtn" data-drawer="mockImg" title="Mock 图片填充"><svg class="ic"><use href="#i-image"/></svg><span class="lbl">图片</span></div>
+    <div class="sep"></div>
+    <div class="tbtn" id="paletteBtn" data-drawer="palette" title="色板"><svg class="ic"><use href="#i-palette"/></svg><span class="lbl">色板</span></div>
+    <div class="tbtn" id="settingsBtn" data-drawer="settings" title="设置"><svg class="ic"><use href="#i-settings"/></svg><span class="lbl">设置</span></div>
+    <div class="spacer"></div>
+    <div class="tbtn icon-only close" id="closeBtn" title="关闭工具栏"><svg class="ic"><use href="#i-close"/></svg></div>
+  </div>
+
+  <div id="drawer" class="drawer">
+    <!-- Mock 文本 -->
+    <div id="sec-mockText" style="display:none">
+      <div class="drawer-title">选中文本图层 → 点击填充</div>
+      <div class="chips">
+        <div class="chip" data-run='{"name":"mockTextCustom"}'>自定义词库</div>
+        <div class="chip" data-run='{"name":"editWords"}' title="编辑自定义词库">编辑词库…</div>
+        <div class="chip" data-run='{"name":"mockText","arg":"smart"}'>智能匹配</div>
+        <div class="chip" data-run='{"name":"mockText","arg":"name"}'>姓名</div>
+        <div class="chip" data-run='{"name":"mockText","arg":"phone"}'>手机号</div>
+        <div class="chip" data-run='{"name":"mockText","arg":"email"}'>邮箱</div>
+        <div class="chip" data-run='{"name":"mockText","arg":"price"}'>价格</div>
+        <div class="chip" data-run='{"name":"mockText","arg":"addr"}'>地址</div>
+        <div class="chip" data-run='{"name":"mockText","arg":"date"}'>日期</div>
+        <div class="chip" data-run='{"name":"mockText","arg":"sentence"}'>句子</div>
+      </div>
+    </div>
+    <!-- Mock 图片 -->
+    <div id="sec-mockImg" style="display:none">
+      <div class="drawer-title">选中矩形/形状/图片图层 → 点击填充</div>
+      <div class="chips">
+        <div class="chip" data-run='{"name":"mockImage","arg":"any"}'>任意图片</div>
+        <div class="chip" data-run='{"name":"mockImage","arg":"portrait"}'>人像</div>
+        <div class="chip" data-run='{"name":"mockImage","arg":"landscape"}'>风景</div>
+        <div class="chip" data-run='{"name":"mockImage","arg":"local"}'>本地图片</div>
+        <div class="chip" data-run='{"name":"setImgDir"}' title="设置本地图片素材文件夹">设置素材夹…</div>
+      </div>
+    </div>
+    <!-- 色板 -->
+    <div id="sec-palette" style="display:none">
+      <div class="drawer-title">点击色块复制色值</div>
+      <div class="drawer-sub">文档颜色（按使用次数）</div>
+      <div class="chips" id="docColors"></div>
+      <div class="drawer-sub">我的色板</div>
+      <div class="chips" id="myColors"></div>
+      <div class="chips" style="margin-top:8px">
+        <div class="chip" data-run='{"name":"addSelectedColor"}' title="取选中图层的填充/文字色">＋ 添加选中颜色</div>
+      </div>
+    </div>
+    <!-- 图形分割 -->
+    <div id="sec-slice" style="display:none">
+      <div class="drawer-title">选中一个画板/图形 → 按网格分割出新图形</div>
+      <div class="slice-row">
+        <label>列 <input type="number" id="sliceCols" value="2" min="1" max="60"></label>
+        <label>行 <input type="number" id="sliceRows" value="2" min="1" max="60"></label>
+        <label>间距 <input type="number" id="sliceGap" value="0" min="0"></label>
+        <label>页边距 <input type="number" id="sliceMargin" value="0" min="0"></label>
+        <div class="chip" id="sliceGo" title="按上方参数分割选中图层">开始分割</div>
+      </div>
+    </div>
+    <!-- 设置 -->
+    <div id="sec-settings" style="display:none">
+      <div class="drawer-title">按钮显示样式（保存后立即生效并记忆）</div>
+      <div class="chips">
+        <div class="chip" id="optText" data-run='{"name":"setBarStyle","arg":"text"}'>图标 + 文字</div>
+        <div class="chip" id="optIcon" data-run='{"name":"setBarStyle","arg":"icon"}'>仅图标</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    function toast(msg) {
+      var t = document.getElementById('toast')
+      t.textContent = msg
+      t.classList.add('show')
+      setTimeout(function () { t.classList.remove('show') }, 1500)
+    }
+    document.getElementById('logoBtn').onclick = function () {
+      window.postMessage('action', 'help')
+    }
+    document.getElementById('closeBtn').onclick = function () {
+      window.postMessage('close', '')
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.tbtn[data-action]'), function (el) {
+      el.onclick = function () {
+        window.postMessage('action', el.getAttribute('data-action'))
+      }
+    })
+
+    function runAction(name, arg) {
+      window.postMessage('run', JSON.stringify({ name: name, arg: arg }))
+    }
+
+    /* ---------- 抽屉按钮：通知插件伸缩窗口 ---------- */
+    Array.prototype.forEach.call(document.querySelectorAll('.tbtn[data-drawer]'), function (el) {
+      el.onclick = function () {
+        runAction('toggleDrawer', el.getAttribute('data-drawer'))
+      }
+    })
+    Array.prototype.forEach.call(document.querySelectorAll('.chip[data-run]'), function (el) {
+      el.onclick = function () {
+        var payload = {}
+        try { payload = JSON.parse(el.getAttribute('data-run')) } catch (e) { /* ignore */ }
+        window.postMessage('run', JSON.stringify(payload))
+      }
+    })
+
+    /* ---------- 插件侧调用：切换抽屉显示 ---------- */
+    window.__setDrawer = function (section) {
+      var drawer = document.getElementById('drawer')
+      var sections = ['mockText', 'mockImg', 'palette', 'slice', 'settings']
+      sections.forEach(function (s) {
+        document.getElementById('sec-' + s).style.display = (s === section) ? 'block' : 'none'
+      })
+      Array.prototype.forEach.call(document.querySelectorAll('.tbtn[data-drawer]'), function (el) {
+        el.classList.toggle('active', el.getAttribute('data-drawer') === section)
+      })
+      drawer.classList.toggle('visible', !!section)
+    }
+
+    /* ---------- 图形分割 ---------- */
+    document.getElementById('sliceGo').onclick = function () {
+      function val(id, dft) {
+        var v = parseFloat(document.getElementById(id).value)
+        return isNaN(v) ? dft : v
+      }
+      runAction('slice', {
+        cols: val('sliceCols', 2),
+        rows: val('sliceRows', 2),
+        gap: val('sliceGap', 0),
+        margin: val('sliceMargin', 0)
+      })
+    }
+
+    /* ---------- 插件侧调用：切换 图标/图标+文字 模式 ---------- */
+    window.__setBarStyle = function (mode) {
+      document.body.classList.toggle('mode-icon', mode === 'icon')
+      document.body.classList.toggle('mode-text', mode !== 'icon')
+      var ot = document.getElementById('optText')
+      var oi = document.getElementById('optIcon')
+      if (ot && oi) {
+        ot.classList.toggle('on', mode !== 'icon')
+        oi.classList.toggle('on', mode === 'icon')
+      }
+    }
+
+    /* ---------- 色板 ---------- */
+    window.__renderPalette = function (data) {
+      var dc = document.getElementById('docColors')
+      var mc = document.getElementById('myColors')
+      var dh = ''
+      ;(data.doc || []).forEach(function (it) {
+        dh += '<div class="cchip" title="' + it.c + ' · ' + it.n + ' 次" style="background:' + it.c + '" onclick="runAction(\'copyColor\',\'' + it.c + '\')"></div>'
+      })
+      dc.innerHTML = dh || '<span class="empty">当前页面没有收集到颜色</span>'
+      var mh = ''
+      ;(data.mine || []).forEach(function (c) {
+        mh += '<div class="cchip" title="' + c + '" style="background:' + c + '" onclick="runAction(\'copyColor\',\'' + c + '\')">' +
+          '<span class="del" title="从色板移除" onclick="event.stopPropagation(); runAction(\'removeColor\',\'' + c + '\')">×</span></div>'
+      })
+      mc.innerHTML = mh || '<span class="empty">还没有收藏颜色，选中图层后点下方按钮添加</span>'
+    }
+  </script>
+</body>
+</html>

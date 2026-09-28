@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #FAF9F6;
+    color: #2B2B2B;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  header {
+    background: #1F1F1F;
+    color: #FAF9F6;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .seal {
+    width: 22px; height: 22px;
+    background: #C0392B;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 13px;
+    line-height: 22px;
+    text-align: center;
+    font-weight: 600;
+  }
+  header b { font-size: 14px; flex: 1; }
+  header .mode { font-size: 11px; opacity: 0.5; }
+  #searchRow {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #fff;
+    border-bottom: 1px solid #E5E2DA;
+    align-items: center;
+  }
+  #q {
+    width: 150px;
+    border: 1px solid #E5E2DA;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    outline: none;
+    background: #FAF9F6;
+  }
+  #q:focus { border-color: #6B21A8; background: #fff; }
+  #go {
+    border: none;
+    border-radius: 8px;
+    background: #6B21A8;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  #go:hover { background: #58187F; }
+  #sizes { display: flex; gap: 4px; align-items: center; margin-left: auto; }
+  #sizes span { font-size: 11px; color: #999; margin-right: 2px; }
+  .sz {
+    border: 1px solid #E5E2DA;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 6px 8px;
+    cursor: pointer;
+    color: #666;
+  }
+  .sz:hover { background: #F1EEE6; }
+  .sz.on { background: #6B21A81A; border-color: #6B21A8; color: #6B21A8; font-weight: 600; }
+  #grid {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    align-content: start;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #E5E2DA;
+    border-radius: 10px;
+    padding: 14px 4px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: #6B21A8;
+    box-shadow: 0 4px 14px rgba(107,33,168,0.15);
+    transform: translateY(-2px);
+  }
+  .card:active { transform: translateY(0); }
+  .card .svg-box { width: 28px; height: 28px; margin: 0 auto 6px; }
+  .card .svg-box svg { width: 28px; height: 28px; display: block; }
+  .card .ld { font-size: 14px; color: #D5D2C8; line-height: 28px; }
+  .card .nm {
+    font-size: 10px;
+    color: #999;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .more {
+    grid-column: 1 / -1;
+    border: 1px solid #E5E2DA;
+    background: #fff;
+    border-radius: 8px;
+    font-size: 12px;
+    padding: 10px 0;
+    cursor: pointer;
+    color: #6B21A8;
+  }
+  .more:hover { background: #F1EEE6; }
+  .hint {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+    padding: 30px 10px;
+    line-height: 1.8;
+  }
+  footer {
+    padding: 8px 14px;
+    border-top: 1px solid #E5E2DA;
+    font-size: 11px;
+    color: #AAA;
+    background: #fff;
+  }
+  #toast {
+    position: absolute;
+    left: 50%; bottom: 48px;
+    transform: translateX(-50%);
+    background: rgba(31,31,31,0.92);
+    color: #fff;
+    font-size: 12px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    max-width: 80%;
+    z-index: 10;
+  }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+  <header>
+    <span class="seal">墨</span>
+    <b>图标库</b>
+    <span class="mode">免登录模式</span>
+  </header>
+
+  <div id="searchRow">
+    <input id="q" type="text" placeholder="用户 / home / cart…" />
+    <button id="go">搜索</button>
+    <div id="sizes">
+      <span>尺寸</span>
+      <button class="sz" data-s="16">16</button>
+      <button class="sz" data-s="24">24</button>
+      <button class="sz on" data-s="32">32</button>
+      <button class="sz" data-s="48">48</button>
+      <button class="sz" data-s="64">64</button>
+    </div>
+  </div>
+
+  <div id="grid">
+    <div class="hint">输入关键词搜索（单次最多 999 个结果）<br>（Ant Design / Material / Tabler 等图标集）<br>点击图标插入画布</div>
+  </div>
+
+  <footer>图源 Iconify（免登录） · iconfont 登录版开发中 · 支持中文关键词</footer>
+
+  <div id="toast"></div>
+
+  <script>
+    /* ---------- 中文 → 英文关键词映射 ---------- */
+    var ZH2EN = {
+      '用户': 'user person', '账号': 'account', '头像': 'avatar face', '登录': 'login',
+      '搜索': 'search', '首页': 'home house', '设置': 'settings gear', '配置': 'settings gear',
+      '添加': 'plus add', '新增': 'plus add', '删除': 'delete trash', '编辑': 'edit pencil',
+      '关闭': 'close x', '保存': 'save', '下载': 'download', '上传': 'upload',
+      '时间': 'time clock', '日期': 'date calendar', '日历': 'calendar', '时钟': 'clock',
+      '地图': 'map', '位置': 'location pin', '电话': 'phone', '邮件': 'mail email',
+      '消息': 'message', '聊天': 'chat', '评论': 'comment', '购物车': 'cart',
+      '购物': 'shopping', '订单': 'order list', '支付': 'payment', '金钱': 'money',
+      '钱包': 'wallet', '优惠': 'coupon ticket', '星星': 'star', '收藏': 'star bookmark',
+      '点赞': 'like heart thumb', '喜欢': 'heart', '分享': 'share', '菜单': 'menu',
+      '列表': 'list', '网格': 'grid', '图片': 'image photo picture', '相机': 'camera',
+      '视频': 'video play', '音乐': 'music', '声音': 'volume speaker', '锁': 'lock',
+      '钥匙': 'key', '眼睛': 'eye view', '密码': 'password lock', '团队': 'team group users',
+      '公司': 'building office', '图表': 'chart', '数据': 'chart data analytics', '文件': 'file document',
+      '文件夹': 'folder', '链接': 'link', '代码': 'code', '电脑': 'computer desktop',
+      '手机': 'mobile phone smartphone', '网络': 'wifi network', '云': 'cloud', '服务器': 'server',
+      '通知': 'notification bell', '警告': 'warning alert', '帮助': 'help question', '信息': 'info',
+      '成功': 'success check', '错误': 'error', '加载': 'loading spinner refresh', '刷新': 'refresh',
+      '过滤': 'filter', '排序': 'sort', '复制': 'copy', '剪切': 'cut scissors',
+      '撤销': 'undo', '重做': 'redo', '全屏': 'fullscreen expand', '退出': 'logout exit',
+      '注册': 'register signup', '箭头': 'arrow', '对勾': 'check tick', '心形': 'heart',
+      '闪电': 'lightning bolt', '太阳': 'sun', '月亮': 'moon', '天气': 'weather',
+      '旅行': 'travel plane', '汽车': 'car', '礼物': 'gift', '标签': 'tag',
+      '书': 'book', '笔': 'pen pencil', '画笔': 'brush', '工具': 'tool wrench'
+    }
+    function toEn(q) {
+      var out = ' ' + q + ' '
+      Object.keys(ZH2EN)
+        .sort(function (a, b) { return b.length - a.length })
+        .forEach(function (k) {
+          if (out.indexOf(k) !== -1) out = out.split(k).join(' ' + ZH2EN[k] + ' ')
+        })
+      return out.trim().replace(/\s+/g, ' ') || q
+    }
+
+    var SIZE = 32
+    var CHUNK = 100  // 每批渲染 100 个
+    var grid = document.getElementById('grid')
+    var qInput = document.getElementById('q')
+    var toastEl = document.getElementById('toast')
+    var toastTimer = null
+
+    function toast(msg) {
+      toastEl.textContent = msg
+      toastEl.classList.add('show')
+      clearTimeout(toastTimer)
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show') }, 2400)
+    }
+
+    document.querySelectorAll('.sz').forEach(function (b) {
+      b.onclick = function () {
+        document.querySelectorAll('.sz').forEach(function (x) { x.classList.remove('on') })
+        b.classList.add('on')
+        SIZE = parseInt(b.getAttribute('data-s'), 10)
+      }
+    })
+    document.getElementById('go').onclick = doSearch
+    qInput.onkeydown = function (e) { if (e.key === 'Enter') doSearch() }
+    qInput.focus()
+
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    }
+
+    var allIcons = []   // 本次搜索全部结果（最多 999）
+    var shown = 0       // 已渲染数量
+    var svgCache = {}   // key → svg 字符串 | null(失败)
+    var cardBoxes = {}  // key → 缩略图容器元素
+
+    /* ---------- 请求队列：每个图标集 1 个批量请求，间隔 250ms 防限流 ---------- */
+    var queue = []
+    var pumping = false
+    function enqueue(fn) {
+      queue.push(fn)
+      if (!pumping) pump()
+    }
+    function pump() {
+      if (!queue.length) { pumping = false; return }
+      pumping = true
+      var f = queue.shift()
+      f().catch(function () { /* 单个集合失败不阻塞队列 */ }).then(function () {
+        setTimeout(pump, 250)
+      })
+    }
+
+    function svgFromEntry(set, name, data) {
+      var it = data.icons && data.icons[name]
+      if (!it || !it.body) return null
+      var w = it.width || data.width || 24
+      var h = it.height || data.height || 24
+      return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' + it.body + '</svg>'
+    }
+
+    function loadSet(set, names) {
+      var url = 'https://api.iconify.design/' + set + '.json?icons=' + names.join(',')
+      return fetch(url)
+        .then(function (r) { return r.json() })
+        .then(function (data) {
+          names.forEach(function (n) {
+            var key = set + ':' + n
+            var svg = svgFromEntry(set, n, data)
+            svgCache[key] = svg // null 表示该图标数据缺失
+            var box = cardBoxes[key]
+            if (box) {
+              if (svg) box.innerHTML = svg
+              else box.innerHTML = '<div class="ld">✕</div>'
+              delete cardBoxes[key]
+            }
+          })
+        })
+    }
+
+    function doSearch() {
+      var raw = qInput.value.trim()
+      if (!raw) return
+      var en = toEn(raw)
+      grid.innerHTML = '<div class="hint">搜索中…</div>'
+      fetch('https://api.iconify.design/search?query=' + encodeURIComponent(en) + '&limit=999')
+        .then(function (r) { return r.json() })
+        .then(function (json) {
+          allIcons = json.icons || []
+          if (!allIcons.length) {
+            grid.innerHTML = '<div class="hint">没有找到「' + esc(raw) + '」相关图标<br>试试英文关键词，如 user / home / heart</div>'
+            return
+          }
+          grid.innerHTML = ''
+          shown = 0
+          renderChunk()
+        })
+        .catch(function (err) {
+          grid.innerHTML = '<div class="hint">搜索失败，请检查网络后重试<br><span style="color:#C0392B">' + esc(err && err.message ? err.message : err) + '</span></div>'
+        })
+    }
+
+    function renderChunk() {
+      removeMore()
+      var bySet = {}
+      var end = Math.min(shown + CHUNK, allIcons.length)
+      for (var i = shown; i < end; i++) {
+        var full = allIcons[i]
+        var idx = full.indexOf(':')
+        var set = full.slice(0, idx)
+        var name = full.slice(idx + 1)
+        var key = set + ':' + name
+        var card = document.createElement('div')
+        card.className = 'card'
+        card.title = key
+        var box = document.createElement('div')
+        box.className = 'svg-box'
+        box.innerHTML = '<div class="ld">…</div>'
+        card.appendChild(box)
+        var nm = document.createElement('span')
+        nm.className = 'nm'
+        nm.textContent = name
+        card.appendChild(nm)
+        card.onclick = function () {
+          var k = this.getAttribute('data-key')
+          insertCard(k)
+        }
+        card.setAttribute('data-key', key)
+        grid.appendChild(card)
+        cardBoxes[key] = box
+        ;(bySet[set] = bySet[set] || []).push(name)
+      }
+      shown = end
+      if (shown < allIcons.length) addMore()
+      // 按集合批量拉取 SVG 数据（入队串行，间隔 250ms）
+      Object.keys(bySet).forEach(function (set) {
+        enqueue(function () { return loadSet(set, bySet[set]) })
+      })
+    }
+
+    function removeMore() {
+      var m = document.getElementById('moreBtn')
+      if (m) m.remove()
+    }
+
+    function addMore() {
+      var btn = document.createElement('button')
+      btn.id = 'moreBtn'
+      btn.className = 'more'
+      btn.textContent = '显示更多（已显示 ' + shown + ' / ' + allIcons.length + ' 个）'
+      btn.onclick = function () { btn.textContent = '加载中…'; setTimeout(renderChunk, 30) }
+      grid.appendChild(btn)
+    }
+
+    function insertCard(key) {
+      var svg = svgCache[key]
+      if (svg) {
+        var name = key.slice(key.indexOf(':') + 1)
+        try {
+          window.postMessage('insertIcon', JSON.stringify({ svg: svg, name: name, size: SIZE }))
+          toast('已插入画布 ✅ ' + name)
+        } catch (e) {
+          toast('插入失败：' + esc(e && e.message ? e.message : e))
+        }
+      } else if (svg === null) {
+        toast('该图标数据缺失，请重新搜索')
+      } else {
+        toast('图标加载中，请稍候再点')
+      }
+    }
+  </script>
+</body>
+</html>

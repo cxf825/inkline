@@ -1,0 +1,22 @@
+{
+  "name": "inkline",
+  "version": "0.4.4",
+  "description": "Inkline 墨斗 — Sketch 标注 / 交付 / 素材插件（Kitchen + Sketch Measure 组合体）",
+  "skpm": {
+    "name": "Inkline",
+    "manifest": "src/manifest.json",
+    "main": "inkline.sketchplugin",
+    "assets": []
+  },
+  "scripts": {
+    "build": "skpm-build",
+    "watch": "skpm-watch"
+  },
+  "devDependencies": {
+    "@skpm/builder": "^1.0.0",
+    "skpm": "^1.3.3"
+  },
+  "dependencies": {
+    "sketch-module-web-view": "^3.5.3"
+  }
+}
