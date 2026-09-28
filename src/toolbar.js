@@ -183,7 +183,7 @@ export default function () {
     }
     return 'minimized'
   }
-  const followTimer = setInterval(function () {
+  function checkFollow() {
     try {
       const st = docWindowState()
       if (st === 'visible') {
@@ -203,10 +203,32 @@ export default function () {
         try { browserWindow.close() } catch (e) { /* ignore */ }
       }
     } catch (e) { /* ignore */ }
-  }, 400)
+  }
+  const followTimer = setInterval(checkFollow, 400)
+
+  // 双保险：系统通知直接监听窗口最小化/恢复/关闭（JS 定时器万一失效也能即时响应）；
+  // checkFollow 幂等，重复触发无副作用
+  const NC = NSNotificationCenter.defaultCenter()
+  const followObservers = []
+  ;[
+    'NSWindowDidMiniaturizeNotification',
+    'NSWindowDidDeminiaturizeNotification',
+    'NSWindowWillCloseNotification',
+  ].forEach(function (name) {
+    try {
+      followObservers.push(
+        NC.addObserverForName_object_queue_block_(name, null, null, function () {
+          checkFollow()
+        })
+      )
+    } catch (e) { /* ignore */ }
+  })
 
   browserWindow.on('closed', function () {
     clearInterval(followTimer)
+    followObservers.forEach(function (o) {
+      try { NC.removeObserver_(o) } catch (e) { /* ignore */ }
+    })
     setPanel(null)
   })
 
