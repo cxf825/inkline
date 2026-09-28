@@ -9,6 +9,7 @@
     background: #FAF9F6;
     color: #2B2B2B;
     user-select: none;
+    -webkit-user-select: none;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -16,6 +17,8 @@
     border-radius: 10px;
   }
   /* ---------- 横向工具栏 ---------- */
+  /* 整条工具栏 = 原生拖拽区：空白处按住即可拖动窗口，且不会选中文字；
+     按钮单独声明 no-drag，保持点击/悬停正常 */
   .bar {
     flex: none;
     height: 56px;
@@ -24,6 +27,9 @@
     gap: 2px;
     padding: 0 10px;
     background: #FAF9F6;
+    -webkit-app-region: drag;
+    app-region: drag;
+    cursor: grab;
   }
   .logo {
     flex: none;
@@ -37,6 +43,8 @@
     font-weight: 600;
     margin-right: 8px;
     cursor: pointer;
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
   }
   .tbtn {
     flex: none;
@@ -50,6 +58,8 @@
     cursor: pointer;
     color: #444;
     transition: background 0.12s;
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
   }
   .tbtn:hover { background: #EDEAE1; }
   .tbtn:active { background: #E2DED2; }
