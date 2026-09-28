@@ -162,7 +162,43 @@ export default function () {
   // 保存原始窗口引用：色板等模块向面板推送数据时使用，
   // 严禁改走 getWebview()（会重置 webview delegate 导致 executeJavaScript 静默失效）
   setPanel(browserWindow)
+
+  // ---------- 跟随 Sketch 主窗口 ----------
+  // 最小化 Sketch → 面板隐藏；恢复 → 面板回来；
+  // 主窗口全关（Sketch 退到后台）→ 面板一并关闭。
+  // 库自身 movable-area 也用 setInterval 轮询，插件进程内定时器可用
+  const app = NSApplication.sharedApplication()
+  const OUR_TITLES = ['Inkline · 墨斗', 'Inkline 图标库', 'Inkline · 自定义词库']
+  let hiddenByFollow = false
+  const followTimer = setInterval(function () {
+    try {
+      const main = app.mainWindow()
+      if (main) {
+        const t = String(main.title() || '')
+        if (OUR_TITLES.indexOf(t) !== -1) return // 主窗口是我们自己的窗口，不处理
+        if (hiddenByFollow) {
+          hiddenByFollow = false
+          try { browserWindow.show() } catch (e) { /* ignore */ }
+          try { browserWindow.setAlwaysOnTop(true, 'floating', 1) } catch (e) { /* ignore */ }
+          try { browserWindow.moveTop() } catch (e) { /* ignore */ }
+        }
+        return
+      }
+      // 没有主窗口：有最小化窗口 → 跟随隐藏；一个都没有 → Sketch 已全部关闭 → 关面板
+      if (app.miniaturizedWindows().count() > 0) {
+        if (!hiddenByFollow) {
+          hiddenByFollow = true
+          try { browserWindow.hide() } catch (e) { /* ignore */ }
+        }
+      } else {
+        clearInterval(followTimer)
+        try { browserWindow.close() } catch (e) { /* ignore */ }
+      }
+    } catch (e) { /* ignore */ }
+  }, 400)
+
   browserWindow.on('closed', function () {
+    clearInterval(followTimer)
     setPanel(null)
   })
 
