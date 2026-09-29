@@ -8,3 +8,4 @@ inkline.sketchplugin/
 .DS_Store
 *.log
 inkline-v*.zip
+__pycache__/
