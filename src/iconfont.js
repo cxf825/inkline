@@ -37,9 +37,18 @@ const DECOR_CSS = [
   'li.head-search { flex: 1 1 0 !important; min-width: 56px !important; margin-left: 12px !important }',
   '.form_search { width: 100% !important; max-width: none !important }',
   '.s_input { background: #fff !important; border: 1px solid #E5E2DA !important; border-radius: 14px !important; color: #2B2B2B !important; width: 100% !important; font-size: 12px !important }',
-  // 上传/语言切换在窄窗口挤占空间，隐藏（购物车/头像/消息/登录保留）
+  // 上传/语言切换在窄窗口挤占空间，隐藏（购物车/头像/消息/登录进左下抽屉）
   '.quick-menu > ul > li:has(> a.upload), .quick-menu > ul > li:has(> .lang-btn) { display: none !important }',
-  '.quick-menu > ul > li a.signin { padding: 2px 3px !important; font-size: 11px !important; color: #2B2B2B !important }',
+  // —— 左下抽屉（购物车/头像/消息/登录）——
+  // 铁律：官网是 Magix 框架，视图元素一旦被 JS 改 DOM/内联样式就可能失绑，
+  // 必须纯 CSS 定位：收起态隐藏，展开态（html.inkline-drawer-open）由
+  // buildDrawer 动态生成的 nth-child 规则钉到左下角（位置随登录态自动重算）
+  'html:not(.inkline-drawer-open) .quick-menu > ul > li:not(.head-search):not(#inkline-sizes) { display: none !important }',
+  '#inkline-drawer { position: fixed; left: 12px; bottom: 16px; z-index: 2147483645; pointer-events: none; font-family: -apple-system, "PingFang SC", sans-serif }',
+  '#inkline-drawer-handle { width: 36px; height: 36px; border-radius: 50%; background: rgba(31,31,31,.92); color: #FAF9F6; font-size: 15px; text-align: center; line-height: 36px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.25); pointer-events: auto }',
+  '#inkline-drawer-pill { display: none; position: absolute; left: 0; bottom: 0; height: 36px; border-radius: 18px; background: rgba(31,31,31,.92); box-shadow: 0 2px 10px rgba(0,0,0,.25) }',
+  'html.inkline-drawer-open #inkline-drawer-handle { display: none }',
+  'html.inkline-drawer-open #inkline-drawer-pill { display: block }',
   'header .site-nav .quick-menu,',
   'header .site-nav .quick-menu a,',
   'header .site-nav .quick-menu li,',
@@ -75,10 +84,13 @@ const DECOR_CSS = [
   'body { overflow-x: hidden !important }',
   'body, .inmain, .page-manage-container, .wrap { background: #FAF9F6 !important }',
   '.page-search-container > img, .footer { display: none !important }',
-  // —— Kitchen 式网格：白底 + 细网格线，无卡片描边，5 列自适应 ——
-  '.page-search-container .block-icon-list { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)) !important; gap: 0 !important; padding: 0 !important; background: #fff !important; border-top: 1px solid #ECE9E1 !important }',
-  '.page-search-container .block-icon-list > li { background: #fff !important; border: 0 !important; border-right: 1px solid #F0EDE6 !important; border-bottom: 1px solid #F0EDE6 !important; border-radius: 0 !important }',
+  // —— Kitchen 式网格：白底 + 细网格线，无卡片描边，紧凑 6 列 + 缩图标 + 去名称 ——
+  '.page-search-container .block-icon-list { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)) !important; gap: 0 !important; padding: 0 !important; background: #fff !important; border-top: 1px solid #ECE9E1 !important }',
+  '.page-search-container .block-icon-list > li { background: #fff !important; border: 0 !important; border-right: 1px solid #F0EDE6 !important; border-bottom: 1px solid #F0EDE6 !important; border-radius: 0 !important; padding: 10px 0 !important; text-align: center !important }',
   '.page-search-container .block-icon-list > li:hover { background: #F0F5FE !important }',
+  '.page-search-container .block-icon-list .icon-name { display: none !important }',
+  '.page-search-container .block-icon-list .icon-twrap { width: 28px !important; height: 28px !important }',
+  '.page-search-container .block-icon-list li svg.icon { width: 28px !important; height: 28px !important }',
   // —— 分页浅色化 + 主题蓝 ——
   '.block-pagination-wrap { background: #FAF9F6 !important }',
   '.block-pagination li.active, .block-pagination li.active a { background: ' + BLUE + ' !important; color: #fff !important }',
@@ -90,6 +102,7 @@ const DECOR_CSS = [
 // 作用：① 顶部注入 Inkline 黑色顶栏（标题 / 插入图标开关 / 模式切换按钮）
 //          + 「尺寸」胶囊（插进官网搜索行，跟在原生搜索框后面）
 //          + 白底标签栏（图标库/我的项目/我的收藏）
+//          + 左下抽屉（购物车/头像/消息/登录，纯 CSS 定位，点外/滚动自动收起）
 //       ② 插入图标开关开启时，点击官网任意图标卡片 = 抓取该卡片内联 SVG 送进画布
 // 实测 iconfont 搜索结果卡片结构：li.J_icon_id_<id> > div.icon-twrap > svg.icon
 // （viewBox 0 0 1024 1024，内联含完整 path，无需逆向接口）
@@ -114,6 +127,17 @@ const ICONFONT_INJECT_RAW = [
   '    if (window.__inklineInsertMode) root.classList.add("inkline-insert")',
   '    else root.classList.remove("inkline-insert")',
   '  }',
+  // —— 抽屉收起：点击抽屉/官网弹层之外自动收起（必须注册在下面插入拦截之前，
+  //    否则插入拦截 capture 阶段 stopPropagation 会把这里吞掉）——
+  '  document.addEventListener("click", function(e){',
+  '    if (!document.documentElement.classList.contains("inkline-drawer-open")) return',
+  '    var t = e.target',
+  '    if (t && t.closest && (t.closest("#inkline-drawer") || t.closest("[class*=\\"dropdown\\"]") || t.closest("[class*=\\"car-\\"]"))) return',
+  '    document.documentElement.classList.remove("inkline-drawer-open")',
+  '  }, true)',
+  '  window.addEventListener("scroll", function(){',
+  '    document.documentElement.classList.remove("inkline-drawer-open")',
+  '  }, true)',
   // ---- 抓取卡片内联 SVG，规整成可导入 Sketch 的 SVG ----
   '  function buildSvg(li){',
   '    var svg = li.querySelector("svg.icon") || li.querySelector("svg")',
@@ -217,6 +241,64 @@ const ICONFONT_INJECT_RAW = [
   '      }',
   '    })',
   '  }',
+  // ---- 左下抽屉：购物车/头像/消息/登录 ----
+  // 官网是 Magix 框架：视图元素被 JS 移动/改内联样式后会失绑（实测 toggleCar 失效），
+  // 所以只做两件不碰视图 DOM 的事：① 我们自己的把手/胶囊元素 ② 动态生成纯 CSS 定位规则
+  '  function drawerItems(){',
+  '    var lis = document.querySelectorAll(".quick-menu > ul > li")',
+  '    var out = []',
+  '    for (var i = 0; i < lis.length; i++) {',
+  '      var li = lis[i]',
+  '      if (li.className.indexOf("head-search") !== -1) continue',
+  '      if (li.id === "inkline-sizes") continue',
+  '      if (li.querySelector("a.upload") || li.querySelector(".lang-btn")) continue',
+  '      out.push(i)',
+  '    }',
+  '    return out',
+  '  }',
+  '  function refreshDrawerPos(){',
+  '    var old = document.getElementById("inkline-drawer-pos")',
+  '    if (old) old.parentNode.removeChild(old)',
+  '    var idxs = drawerItems()',
+  '    if (!idxs.length) return',
+  '    var rules = []',
+  '    for (var k = 0; k < idxs.length; k++) {',
+  '      var li = document.querySelectorAll(".quick-menu > ul > li")[idxs[k]]',
+  '      var n = idxs[k] + 1',
+  '      var isSignin = !!li.querySelector("a.signin")',
+  '      var box = isSignin ? "width:auto !important;min-width:36px !important;border-radius:18px !important;padding:0 10px !important;height:36px !important" : "width:36px !important;height:36px !important;border-radius:50% !important"',
+  '      var base = "html.inkline-drawer-open .quick-menu > ul > li:nth-child(" + n + ")"',
+  '      rules.push(base + "{position:fixed !important;bottom:16px !important;top:auto !important;left:" + (12 + k * 44) + "px !important;display:flex !important;align-items:center;justify-content:center;margin:0 !important;background:rgba(31,31,31,.92);z-index:2147483646;cursor:pointer;" + box + "}")',
+  '      rules.push(base + " .iconfont, " + base + " a.signin{color:#fff !important}")',
+  '    }',
+  '    var st = document.createElement("style")',
+  '    st.id = "inkline-drawer-pos"',
+  '    st.textContent = rules.join("\\n")',
+  '    document.head.appendChild(st)',
+  '  }',
+  '  function buildDrawer(){',
+  '    var old = document.getElementById("inkline-drawer")',
+  '    if (old) old.parentNode.removeChild(old)',
+  '    if (!document.body) return',
+  '    var d = document.createElement("div")',
+  '    d.id = "inkline-drawer"',
+  '    var pill = document.createElement("div")',
+  '    pill.id = "inkline-drawer-pill"',
+  '    var handle = document.createElement("div")',
+  '    handle.id = "inkline-drawer-handle"',
+  '    handle.textContent = "⋯"',
+  '    handle.title = "购物车 / 消息 / 头像"',
+  '    d.appendChild(pill)',
+  '    d.appendChild(handle)',
+  '    document.body.appendChild(d)',
+  '    handle.onclick = function(){',
+  '      refreshDrawerPos()',
+  '      var n = drawerItems().length',
+  '      if (!n) return',
+  '      pill.style.width = (n * 44 - 8) + "px"',
+  '      document.documentElement.classList.add("inkline-drawer-open")',
+  '    }',
+  '  }',
   // ---- 白底标签栏（Kitchen 式）：图标库 / 我的项目 / 我的收藏 ----
   // 插入 header 之后（文档流内），active 按 URL 判定；自愈定时器保证路由切换后重建
   '  var TABS = [',
@@ -246,13 +328,15 @@ const ICONFONT_INJECT_RAW = [
   '      addStyle(); syncModeClass()',
   '      if (!document.getElementById("inkline-top")) buildTop()',
   '      if (!document.getElementById("inkline-sizes")) buildSizes()',
+  '      if (!document.getElementById("inkline-drawer")) buildDrawer()',
+  '      refreshDrawerPos()',
   '      if (!document.getElementById("inkline-tabs")) buildTabs()',
   '    } catch (e) { /* ignore */ }',
   '  }',
   '  window.__inklineShow()',
   '  if (!window.__inklineTimer) {',
   '    window.__inklineTimer = setInterval(function(){',
-  '      if (!document.getElementById("inkline-top") || !document.getElementById("inkline-tabs")) window.__inklineShow()',
+  '      if (!document.getElementById("inkline-top") || !document.getElementById("inkline-tabs") || !document.getElementById("inkline-drawer")) window.__inklineShow()',
   '    }, 2000)',
   '  }',
   '})()'

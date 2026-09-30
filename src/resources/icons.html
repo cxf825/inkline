@@ -112,13 +112,13 @@
   }
   .sz:hover { background: #F1EEE6; }
   .sz.on { background: rgba(56,104,230,0.1); border-color: #3868E6; color: #3868E6; font-weight: 600; }
-  /* Kitchen 式网格：白底 + 细网格线，无卡片描边 */
+  /* Kitchen 式网格：白底 + 细网格线，无卡片描边，紧凑 6 列 */
   #grid {
     flex: 1;
     overflow: auto;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
     gap: 0;
     align-content: start;
     background: #fff;
@@ -129,23 +129,15 @@
     border-right: 1px solid #F0EDE6;
     border-bottom: 1px solid #F0EDE6;
     border-radius: 0;
-    padding: 14px 4px 8px;
+    padding: 12px 4px 10px;
     text-align: center;
     cursor: pointer;
   }
   .card:hover { background: #F0F5FE; }
   .card:active { background: #E8F0FD; }
-  .card .svg-box { width: 28px; height: 28px; margin: 0 auto 6px; }
+  .card .svg-box { width: 28px; height: 28px; margin: 0 auto; }
   .card .svg-box svg { width: 28px; height: 28px; display: block; }
   .card .ld { font-size: 14px; color: #D5D2C8; line-height: 28px; }
-  .card .nm {
-    font-size: 11px;
-    color: #666;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
   /* ---------- 分页器 ---------- */
   #pager {
     flex: none;
@@ -448,10 +440,6 @@
         box.className = 'svg-box'
         box.innerHTML = '<div class="ld">…</div>'
         card.appendChild(box)
-        var nm = document.createElement('span')
-        nm.className = 'nm'
-        nm.textContent = name
-        card.appendChild(nm)
         card.setAttribute('data-key', key)
         card.onclick = function () {
           insertCard(this.getAttribute('data-key'))
