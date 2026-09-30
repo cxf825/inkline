@@ -17,10 +17,11 @@
   header {
     background: #1F1F1F;
     color: #FAF9F6;
-    padding: 12px 14px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex: none;
   }
   .seal {
     width: 22px; height: 22px;
@@ -31,10 +32,28 @@
     line-height: 22px;
     text-align: center;
     font-weight: 600;
+    flex: none;
   }
   header b { font-size: 14px; flex: 1; }
-  header .mode { font-size: 11px; opacity: 0.5; }
-  #ifBtn {
+  .ins-lbl { font-size: 11px; color: #DDD; flex: none; }
+  /* 插入图标开关：仅对 iconfont 官网模式生效，本地模式置灰展示 */
+  #insTgl {
+    width: 34px; height: 18px;
+    border-radius: 9px;
+    background: #4A4A4A;
+    position: relative;
+    cursor: pointer;
+    flex: none;
+    opacity: 0.45;
+  }
+  #insTgl i {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .mbtn {
     border: 1px solid rgba(250,249,246,0.35);
     background: transparent;
     color: #FAF9F6;
@@ -42,8 +61,12 @@
     font-size: 11px;
     padding: 5px 10px;
     cursor: pointer;
+    flex: none;
+    white-space: nowrap;
   }
-  #ifBtn:hover { background: rgba(250,249,246,0.15); }
+  .mbtn:hover { background: rgba(250,249,246,0.15); }
+  .mbtn.on { background: #3868E6; border-color: #3868E6; color: #fff; }
+  .mbtn.on:hover { background: #2B55C4; }
   #searchRow {
     display: flex;
     gap: 8px;
@@ -51,28 +74,32 @@
     background: #fff;
     border-bottom: 1px solid #E5E2DA;
     align-items: center;
+    flex: none;
   }
-  #q {
-    width: 150px;
+  /* 圆角搜索框 + 框内放大镜（无独立搜索按钮，回车触发） */
+  #sbox {
+    flex: 1;
+    display: flex;
+    align-items: center;
     border: 1px solid #E5E2DA;
-    border-radius: 8px;
-    padding: 8px 10px;
+    border-radius: 14px;
+    background: #FAF9F6;
+    padding: 0 10px;
+    min-width: 0;
+  }
+  #sbox:focus-within { border-color: #3868E6; background: #fff; }
+  #q {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    padding: 8px 0;
     font-size: 13px;
     outline: none;
-    background: #FAF9F6;
+    color: #2B2B2B;
   }
-  #q:focus { border-color: #6B21A8; background: #fff; }
-  #go {
-    border: none;
-    border-radius: 8px;
-    background: #6B21A8;
-    color: #fff;
-    font-size: 13px;
-    padding: 8px 16px;
-    cursor: pointer;
-  }
-  #go:hover { background: #58187F; }
-  #sizes { display: flex; gap: 4px; align-items: center; margin-left: auto; }
+  #sbox svg { flex: none; color: #999; }
+  #sizes { display: flex; gap: 4px; align-items: center; flex: none; }
   #sizes span { font-size: 11px; color: #999; margin-right: 2px; }
   .sz {
     border: 1px solid #E5E2DA;
@@ -84,37 +111,36 @@
     color: #666;
   }
   .sz:hover { background: #F1EEE6; }
-  .sz.on { background: #6B21A81A; border-color: #6B21A8; color: #6B21A8; font-weight: 600; }
+  .sz.on { background: rgba(56,104,230,0.1); border-color: #3868E6; color: #3868E6; font-weight: 600; }
+  /* Kitchen 式网格：白底 + 细网格线，无卡片描边 */
   #grid {
     flex: 1;
     overflow: auto;
-    padding: 12px;
+    padding: 0;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0;
     align-content: start;
+    background: #fff;
   }
   .card {
     background: #fff;
-    border: 1px solid #E5E2DA;
-    border-radius: 10px;
+    border: 0;
+    border-right: 1px solid #F0EDE6;
+    border-bottom: 1px solid #F0EDE6;
+    border-radius: 0;
     padding: 14px 4px 8px;
     text-align: center;
     cursor: pointer;
-    transition: box-shadow 0.15s, transform 0.15s;
   }
-  .card:hover {
-    border-color: #6B21A8;
-    box-shadow: 0 4px 14px rgba(107,33,168,0.15);
-    transform: translateY(-2px);
-  }
-  .card:active { transform: translateY(0); }
+  .card:hover { background: #F0F5FE; }
+  .card:active { background: #E8F0FD; }
   .card .svg-box { width: 28px; height: 28px; margin: 0 auto 6px; }
   .card .svg-box svg { width: 28px; height: 28px; display: block; }
   .card .ld { font-size: 14px; color: #D5D2C8; line-height: 28px; }
   .card .nm {
-    font-size: 10px;
-    color: #999;
+    font-size: 11px;
+    color: #666;
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -144,7 +170,7 @@
     color: #666;
   }
   .pg:hover:not(:disabled) { background: #F1EEE6; }
-  .pg.on { background: #6B21A8; border-color: #6B21A8; color: #fff; font-weight: 600; }
+  .pg.on { background: #3868E6; border-color: #3868E6; color: #fff; font-weight: 600; }
   .pg:disabled { opacity: 0.4; cursor: default; }
   .pg-ellipsis { font-size: 12px; color: #BBB; padding: 0 2px; }
   #pager .info { font-size: 11px; color: #AAA; margin-left: 8px; }
@@ -155,13 +181,6 @@
     text-align: center;
     padding: 30px 10px;
     line-height: 1.8;
-  }
-  footer {
-    padding: 8px 14px;
-    border-top: 1px solid #E5E2DA;
-    font-size: 11px;
-    color: #AAA;
-    background: #fff;
   }
   #toast {
     position: absolute;
@@ -185,13 +204,17 @@
   <header>
     <span class="seal">墨</span>
     <b>图标库</b>
-    <span class="mode">本地搜索 · Iconify</span>
-    <button id="ifBtn" title="切换到 iconfont 官网：原生中文搜索，需登录 iconfont.cn">iconfont 官网 ›</button>
+    <span class="ins-lbl" title="插入图标开关仅对 iconfont 官网模式生效">插入图标</span>
+    <span id="insTgl" title="插入图标开关仅对 iconfont 官网模式生效"><i></i></span>
+    <button class="mbtn on" id="localBtn">本地·iconify</button>
+    <button class="mbtn" id="ifBtn" title="切换到 iconfont 官网：原生中文搜索，需登录 iconfont.cn">iconfont·官网</button>
   </header>
 
   <div id="searchRow">
-    <input id="q" type="text" placeholder="用户 / home / cart…" />
-    <button id="go">搜索</button>
+    <div id="sbox">
+      <input id="q" type="text" placeholder="请输入关键词" />
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+    </div>
     <div id="sizes">
       <span>尺寸</span>
       <button class="sz" data-s="16">16</button>
@@ -207,8 +230,6 @@
   </div>
 
   <div id="pager"></div>
-
-  <footer>图源 Iconify（免登录） · 支持中文关键词搜索 · 页码翻页浏览</footer>
 
   <div id="toast"></div>
 
@@ -305,7 +326,11 @@
         SIZE = parseInt(b.getAttribute('data-s'), 10)
       }
     })
-    document.getElementById('go').onclick = doSearch
+    // 「插入图标」开关仅对 iconfont 官网模式生效，本地模式置灰 + 提示
+    document.getElementById('insTgl').onclick = function () {
+      toast('插入图标开关仅对 iconfont 官网模式生效，本地图标点击即插入')
+    }
+    document.getElementById('go') && (document.getElementById('go').onclick = doSearch)
     // 切换到 iconfont 官网模式（插件侧 loadURL，同一窗口内导航，登录态/Cookie 原生保留）
     document.getElementById('ifBtn').onclick = function () {
       window.postMessage('gotoIconfont', '')
@@ -317,7 +342,6 @@
       if (e.key === 'Enter') doSearch()
     }
     qInput.focus()
-
     function esc(s) {
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     }
