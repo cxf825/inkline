@@ -9,3 +9,6 @@ inkline.sketchplugin/
 *.log
 inkline-v*.zip
 __pycache__/
+
+# 验证截图（临时产物，不进仓库）
+/*.png
