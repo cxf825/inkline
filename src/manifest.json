@@ -1,6 +1,6 @@
 {
   "compatibleVersion": 3,
-  "bundleVersion": 24,
+  "bundleVersion": 25,
   "name": "Inkline",
   "author": "WorkBuddy",
   "description": "Inkline 墨斗 — 标注、离线规范导出、Iconfont、Mock 数据填充",
@@ -12,11 +12,18 @@
       "shortcut": "ctrl cmd b"
     },
     {
-      "name": "标注尺寸",
-      "identifier": "inkline.mark.sizes",
+      "name": "标注宽度",
+      "identifier": "inkline.mark.widths",
       "script": "./measure.js",
       "shortcut": "ctrl shift 2",
-      "handlers": { "run": "markSizes" }
+      "handlers": { "run": "markWidths" }
+    },
+    {
+      "name": "标注高度",
+      "identifier": "inkline.mark.heights",
+      "script": "./measure.js",
+      "shortcut": "ctrl shift 6",
+      "handlers": { "run": "markHeights" }
     },
     {
       "name": "标注间距",
@@ -91,7 +98,8 @@
     "title": "Inkline · 墨斗",
     "items": [
       "inkline.toolbar",
-      "inkline.mark.sizes",
+      "inkline.mark.widths",
+      "inkline.mark.heights",
       "inkline.mark.spacings",
       "inkline.mark.properties",
       "inkline.clear.marks",

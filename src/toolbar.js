@@ -1,6 +1,6 @@
 import BrowserWindow from 'sketch-module-web-view'
 import { UI } from 'sketch'
-import { markSizes, markSpacings, markProperties, clearMarks, addNote } from './measure.js'
+import { markWidths, markHeights, markSpacings, markProperties, clearMarks, addNote } from './measure.js'
 import { exportSpec } from './export.js'
 import { openIconLibrary } from './iconfont.js'
 import { mockText, mockTextCustom, mockImage, chooseImageDir, openWordsEditor } from './mock.js'
@@ -14,7 +14,8 @@ import help from './help.js'
 const IDENTIFIER = 'inkline.toolbar.v5'
 
 const ACTIONS = {
-  markSizes: markSizes,
+  markWidths: markWidths,
+  markHeights: markHeights,
   markSpacings: markSpacings,
   markProperties: markProperties,
   clearMarks: clearMarks,
@@ -49,7 +50,7 @@ function dispatchRun(payloadJson) {
 // 显示模式：text = 图标+文字（默认），icon = 仅图标；窗口宽度不同
 const STYLE_KEY = 'inkline.barStyle'
 const BAR_H = 56
-const W = 740 // 两种显示模式的按钮同宽，工具栏等长
+const W = 786 // 两种显示模式的按钮同宽，工具栏等长（宽度+高度拆分后多一格 44+2）
 const DRAWER_H = {
   mockText: 128,
   mockImg: 96,

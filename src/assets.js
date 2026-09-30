@@ -8,6 +8,7 @@ function pickFolder() {
   panel.setCanChooseDirectories(true)
   panel.setCanChooseFiles(false)
   panel.setAllowsMultipleSelection(false)
+  panel.setCanCreateDirectories(true) // 面板左下角显示"新建文件夹"按钮
   panel.setPrompt('导出到此文件夹')
   panel.setMessage('选择切图导出目录（将在其中生成 @1x/@2x/@3x PNG 与 SVG）')
   panel.setDirectoryURL_(NSURL.fileURLWithPath_(NSHomeDirectory() + '/Desktop'))

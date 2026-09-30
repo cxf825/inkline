@@ -90,24 +90,41 @@ function getSel() {
   return { sel: doc.selectedLayers.layers, page: doc.selectedPage }
 }
 
-// ---------- 标注尺寸 ----------
-export function markSizes() {
-  const { sel, page } = getSel()
-  if (!page) return
+// ---------- 标注宽度 / 标注高度（由原"标注尺寸"拆分） ----------
+function checkSel(sel, page) {
+  if (!page) return false
   if (!sel.length) {
     toast('请先选择要标注的图层')
-    return
+    return false
   }
+  return true
+}
+
+export function markWidths() {
+  const { sel, page } = getSel()
+  if (!checkSel(sel, page)) return
   const anns = []
   sel.forEach(function (layer) {
     const r = absRect(layer)
-    // 宽度（图层下方）
+    // 宽度（图层下方水平标注线）
     const y = r.y + r.h + 8
     anns.push(mkLine(page, r.x, y, r.w, 1, C_SIZE))
     anns.push(mkLine(page, r.x, y - 4, 1, 9, C_SIZE))
     anns.push(mkLine(page, r.x + r.w - 1, y - 4, 1, 9, C_SIZE))
     anns.push(mkTextCenter(page, Math.round(r.w), r.x + r.w / 2, y + 5, C_SIZE))
-    // 高度（图层右侧）
+  })
+  const g = new Group({ parent: page, layers: anns })
+  g.name = PREFIX + '标注-宽度'
+  toast('已标注 ' + sel.length + ' 个图层的宽度')
+}
+
+export function markHeights() {
+  const { sel, page } = getSel()
+  if (!checkSel(sel, page)) return
+  const anns = []
+  sel.forEach(function (layer) {
+    const r = absRect(layer)
+    // 高度（图层右侧垂直标注线）
     const x = r.x + r.w + 8
     anns.push(mkLine(page, x, r.y, 1, r.h, C_SIZE))
     anns.push(mkLine(page, x - 4, r.y, 9, 1, C_SIZE))
@@ -115,8 +132,8 @@ export function markSizes() {
     anns.push(mkTextCenterY(page, Math.round(r.h), x + 5, r.y + r.h / 2, C_SIZE))
   })
   const g = new Group({ parent: page, layers: anns })
-  g.name = PREFIX + '标注-尺寸'
-  toast('已标注 ' + sel.length + ' 个图层的尺寸')
+  g.name = PREFIX + '标注-高度'
+  toast('已标注 ' + sel.length + ' 个图层的高度')
 }
 
 // ---------- 标注间距 ----------
