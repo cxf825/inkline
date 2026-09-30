@@ -4,8 +4,6 @@ import { attachFollow } from './follow.js'
 import { createLayerFromData } from 'sketch'
 import BrowserWindow from 'sketch-module-web-view'
 
-const PANEL_ID = 'inkline.icons.v1'
-
 // Kitchen 式图标库：双模式
 // 1) 本地搜索模式：自建 UI + Iconify（免登录，CORS 开放，面板内 fetch）
 // 2) iconfont 官网模式：同一窗口 loadURL 到 iconfont.cn——登录、中文搜索、
@@ -15,12 +13,12 @@ const PANEL_ID = 'inkline.icons.v1'
 
 const ICONFONT_URL = 'https://www.iconfont.cn/search/index?searchType=icon'
 
-// ---------- 官网模式「装修」样式 ----------
-// 隐藏官网的导航/营销/广告/页脚，重绘为 Inkline 图标库风格（米白底 + 紫色主题），
-// 只保留：搜索框、账号/登录区、筛选行、图标网格、分页 —— Kitchen 式的纯净图标库。
-// 数据与交互（登录、中文搜索、筛选、分页）全部是官网原生能力，我们只动外观。
+// ---------- 官网模式「装修」样式（Kitchen 式图标库界面）----------
+// 隐藏官网的导航/营销/筛选行/广告/页脚，重绘为 Kitchen 式图标库：
+// 顶部标签栏（图标库/我的项目/我的收藏，JS 注入）+ 紧凑网格线图标列表。
+// 数据与交互（登录、中文搜索、分页）全部是官网原生能力，我们只动外观。
 // 类名实测（2026-09-30）：header>.site-nav(#main-nav/.logo/.quick-menu)、.block-sub-banner、
-// .block-search-filter(.tag-item.current)、.page-search-container>.block-icon-list>li.J_icon_id_*、
+// .block-search-filter、.page-search-container>.block-icon-list>li.J_icon_id_*、
 // .block-pagination-wrap、.footer
 const DECOR_CSS = [
   // 顶栏：去 logo 与主导航，米白化，保留搜索框 + 账号/登录
@@ -28,33 +26,33 @@ const DECOR_CSS = [
   'header .site-nav #main-nav,',
   'header .site-nav .btn-site-menu,',
   'header .site-nav .main-nav-mask { display: none !important }',
-  'header, header .site-nav { background: #FAF9F6 !important; border-bottom: 1px solid #ECE9E1 !important }',
+  'header, header .site-nav { background: #FAF9F6 !important; border-bottom: none !important }',
   'header .site-nav .quick-menu,',
   'header .site-nav .quick-menu a,',
   'header .site-nav .quick-menu li,',
   'header .site-nav .quick-menu div,',
   'header .site-nav .quick-menu span { color: #2B2B2B !important }',
   'header .s_input { background: #fff !important; border: 1px solid #E5E2DA !important; border-radius: 14px !important; color: #2B2B2B !important }',
-  // 黑色结果标题行（含 AI 营销入口）隐藏
-  '.block-sub-banner { display: none !important }',
-  // 筛选行浅色化 + 主题紫
-  '.block-search-filter { background: #FAF9F6 !important; border-bottom: 1px solid #ECE9E1 !important }',
-  '.block-search-filter a, .block-search-filter li, .block-search-filter span, .block-search-filter div { color: #444 !important }',
-  '.block-search-filter .tag-item.current { background: #6B21A8 !important }',
-  '.block-search-filter .tag-item.current span { color: #fff !important }',
+  // 黑色结果标题行（AI 营销入口）与筛选行隐藏 —— Kitchen 界面没有这些
+  '.block-sub-banner, .block-search-filter { display: none !important }',
   // 页面背景
   'body, .inmain, .page-manage-container, .wrap { background: #FAF9F6 !important }',
   // 广告位与页脚隐藏
   '.page-search-container > img, .footer { display: none !important }',
-  // 图标网格卡片化
-  '.page-search-container .block-icon-list { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)) !important; gap: 10px; padding: 14px 0 !important }',
-  '.page-search-container .block-icon-list > li { background: #fff !important; border-radius: 10px !important; border: 1px solid #ECE9E1 !important }',
+  // Kitchen 式网格：白底 + 细网格线，无卡片描边
+  '.page-search-container .block-icon-list { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)) !important; gap: 0 !important; padding: 0 !important; background: #fff !important; border: 1px solid #ECE9E1 !important }',
+  '.page-search-container .block-icon-list > li { background: #fff !important; border: 0 !important; border-right: 1px solid #F0EDE6 !important; border-bottom: 1px solid #F0EDE6 !important; border-radius: 0 !important }',
+  '.page-search-container .block-icon-list > li:hover { background: #F5F0FA !important }',
   // 分页浅色化 + 主题紫
   '.block-pagination-wrap { background: #FAF9F6 !important }',
   '.block-pagination li.active, .block-pagination li.active a { background: #6B21A8 !important; color: #fff !important }',
   '.block-pagination li a { color: #444 !important }',
   '.block-pagination .total { color: #666 !important }',
-  // 登录弹窗浮层保持官网原样，仅统一遮罩下页面底色（不动弹窗本身）
+  // 顶部标签栏（JS 注入到 header 之后）
+  "#inkline-tabs { display: flex; background: #EDEAE1; border-bottom: 1px solid #E5E2DA; font-family: -apple-system, 'PingFang SC', sans-serif }",
+  '#inkline-tabs .itab { flex: 1; text-align: center; padding: 13px 0; font-size: 14px; color: #555; cursor: pointer; user-select: none }',
+  '#inkline-tabs .itab:hover { color: #6B21A8 }',
+  '#inkline-tabs .itab.active { background: #FAF9F6; color: #6B21A8; font-weight: 600 }',
 ].join('\n')
 
 // ---------- 官网模式注入脚本 ----------
@@ -70,12 +68,12 @@ const ICONFONT_INJECT_RAW = [
   '  window.__inklineReady = true',
   '  window.__inklineInsertMode = true',
   '  window.__inklineSize = 32',
-  // ---- 样式：界面装修 + 插入模式下卡片紫色描边 ----
+  // ---- 样式：界面装修 + 插入模式（hover 时紫色描边 + 十字光标，网格线下常显描边太重）----
   '  function addStyle(){',
   '    if (document.getElementById("inkline-style")) return',
   '    var s = document.createElement("style")',
   '    s.id = "inkline-style"',
-  '    s.textContent = window.__inklineDecorCss + "\\nhtml.inkline-insert li[class*=\\"J_icon_id_\\"]{outline:2px solid #6B21A8 !important;outline-offset:-2px;cursor:crosshair !important}"',
+  '    s.textContent = window.__inklineDecorCss + "\\nhtml.inkline-insert li[class*=\\"J_icon_id_\\"]{cursor:crosshair !important}\\nhtml.inkline-insert li[class*=\\"J_icon_id_\\"]:hover{outline:2px solid #6B21A8 !important;outline-offset:-2px;background:#EFE7F8 !important}"',
   '    document.documentElement.appendChild(s)',
   '  }',
   '  function syncModeClass(){',
@@ -150,6 +148,30 @@ const ICONFONT_INJECT_RAW = [
   '    if (opts && opts.on) b.style.background = "#6B21A8"',
   '    return b',
   '  }',
+  // ---- 顶部标签栏（Kitchen 式）：图标库 / 我的项目 / 我的收藏 ----
+  // 插入 header 之后（文档流内），active 按 URL 判定；自愈定时器保证路由切换后重建
+  '  var TABS = [',
+  '    ["图标库", "https://www.iconfont.cn/search/index?searchType=icon", "searchType=icon"],',
+  '    ["我的项目", "https://www.iconfont.cn/manage/index?manage_type=myprojects", "manage_type=myprojects"],',
+  '    ["我的收藏", "https://www.iconfont.cn/collections", "collections"]',
+  '  ]',
+  '  function buildTabs(){',
+  '    var old = document.getElementById("inkline-tabs")',
+  '    if (old) old.parentNode.removeChild(old)',
+  '    var header = document.querySelector("header")',
+  '    if (!header || !document.body) return',
+  '    var bar = document.createElement("div")',
+  '    bar.id = "inkline-tabs"',
+  '    var cur = location.href',
+  '    TABS.forEach(function(t){',
+  '      var d = document.createElement("div")',
+  '      d.className = "itab" + (cur.indexOf(t[2]) !== -1 ? " active" : "")',
+  '      d.textContent = t[0]',
+  '      d.onclick = function(){ if (cur.indexOf(t[2]) === -1) location.href = t[1] }',
+  '      bar.appendChild(d)',
+  '    })',
+  '    header.parentNode.insertBefore(bar, header.nextSibling)',
+  '  }',
   '  function buildBar(){',
   '    var old = document.getElementById("inkline-bar")',
   '    if (old) old.parentNode.removeChild(old)',
@@ -175,12 +197,6 @@ const ICONFONT_INJECT_RAW = [
   '      b.onclick = function(){ window.__inklineSize = sz; buildBar() }',
   '      bar.appendChild(b)',
   '    })',
-  '    var proj = btn("我的项目", { title: "打开 iconfont 我的项目" })',
-  '    proj.onclick = function(){ location.href = "https://www.iconfont.cn/manage/index?manage_type=myprojects" }',
-  '    bar.appendChild(proj)',
-  '    var fav = btn("我的收藏", { title: "打开 iconfont 我的收藏" })',
-  '    fav.onclick = function(){ location.href = "https://www.iconfont.cn/collections" }',
-  '    bar.appendChild(fav)',
   '    var back = btn("‹ 返回本地搜索", { title: "返回 Inkline 本地图标搜索（Iconify）" })',
   '    back.style.background = "rgba(192,57,43,.85)"',
   '    back.onclick = function(){ window.postMessage("gotoLocal", "") }',
@@ -188,7 +204,7 @@ const ICONFONT_INJECT_RAW = [
   '    document.body.appendChild(bar)',
   '  }',
   '  window.__inklineShow = function(){',
-  '    try { addStyle(); syncModeClass(); if (!document.getElementById("inkline-bar")) buildBar() } catch (e) { /* ignore */ }',
+  '    try { addStyle(); syncModeClass(); if (!document.getElementById("inkline-tabs")) buildTabs(); if (!document.getElementById("inkline-bar")) buildBar() } catch (e) { /* ignore */ }',
   '  }',
   '  window.__inklineShow()',
   '  if (!window.__inklineTimer) {',
@@ -243,10 +259,11 @@ export function openIconLibrary() {
   }
 
   const browserWindow = new BrowserWindow({
-    identifier: PANEL_ID,
-    width: 480,
-    height: 640,
-    minWidth: 380,
+    // v2：Kitchen 式窄窗口（改尺寸需换 identifier，否则 remembersWindowFrame 记忆的旧尺寸会覆盖）
+    identifier: 'inkline.icons.v2',
+    width: 420,
+    height: 680,
+    minWidth: 360,
     minHeight: 480,
     title: 'Inkline 图标库',
     resizable: true,
