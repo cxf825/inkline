@@ -324,6 +324,20 @@ export function addNote() {
   try { title.style.fontWeight = 6 } catch (e) { /* ignore */ }
   const body = mkText(page, '双击编辑注释…', x + 10, y + 26, NOTE_TEXT + 'CC', 11)
   try { body.style.lineHeight = 18 } catch (e) { /* ignore */ }
+  // 正文锁定宽度：超出自动换行，高度自适应（fixed width + auto height），
+  // 长文本不会再横向冲出便签
+  try {
+    body.frame.width = NOTE_W - 20
+    body.fixedWidth()
+  } catch (e) { /* ignore */ }
+
+  // 便签高度随正文自适应（占位文本较短时保持默认高度）
+  try {
+    const needH = (y + 26 + body.frame.height + 14) - y
+    if (needH > NOTE_H) {
+      bg.frame = new Rectangle(x, y, NOTE_W, needH)
+    }
+  } catch (e) { /* ignore */ }
 
   const g = new Group({ parent: page, layers: [bg, title, body] })
   g.name = PREFIX + '便签'
