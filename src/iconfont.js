@@ -281,6 +281,9 @@ const ICONFONT_INJECT_RAW = [
   '      var base = "html.inkline-drawer-open .quick-menu > ul > li:nth-child(" + n + ")"',
   '      rules.push(base + "{position:fixed !important;bottom:16px !important;top:auto !important;left:" + (12 + k * 44) + "px !important;display:flex !important;align-items:center;justify-content:center;margin:0 !important;background:rgba(31,31,31,.92);z-index:2147483646;cursor:pointer;" + box + "}")',
   '      rules.push(base + " .iconfont, " + base + " a.signin{color:#fff !important}")',
+  // 官网 hover 弹窗（消息/头像的 .head-dropdown / .head-dropdown-tips）默认在 li 下方
+  // （top:53px），抽屉在窗口底部会被整个顶出屏幕外（只剩一条黑边）——改到抽屉上方弹出
+  '      rules.push(base + " .head-dropdown, " + base + " .head-dropdown-tips { top: auto !important; bottom: 100% !important; margin-bottom: 4px !important; left: 0 !important; right: auto !important }")',
   '    }',
   '    var st = document.createElement("style")',
   '    st.id = "inkline-drawer-pos"',
@@ -497,27 +500,55 @@ function insertSvg(payload) {
     return
   }
 
-  // 插入位置：优先当前选中图层所在画板中心，其次第一个画板中心，最后页面原点附近
-  const sel = doc.selectedLayers.layers
+  // 插入目标画板：优先级 ① 当前聚焦的画板（双击进入的画板，走 Obj-C 桥 currentArtboard）
+  // ② 选中图层所在画板（选中画板本身也算） ③ 第一个画板，兜底当前页
+  const boards = (doc.selectedPage.layers || []).filter(function (l) {
+    return l.type === 'Artboard' || l.type === 'Frame'
+  })
   let host = doc.selectedPage
   let cx = 120
   let cy = 120
   try {
-    const ab = sel.length && sel[0].getParentArtboard ? sel[0].getParentArtboard() : null
-    if (ab) {
-      host = ab
-      cx = ab.frame.width / 2
-      cy = ab.frame.height / 2
-    } else {
-      // Sketch 2026 已移除 page.artboards，改用 page.layers 过滤
-      const boards = (doc.selectedPage.layers || []).filter(function (l) {
-        return l.type === 'Artboard' || l.type === 'Frame'
-      })
-      if (boards.length) {
-        host = boards[0]
-        cx = boards[0].frame.width / 2
-        cy = boards[0].frame.height / 2
+    // ① 当前聚焦画板：MSPage.currentArtboard()（CocoaScript 下方法/属性两种形态都试）
+    let focused = null
+    try {
+      const pageSk = doc.selectedPage.sketchObject
+      if (pageSk) {
+        const raw = typeof pageSk.currentArtboard === 'function' ? pageSk.currentArtboard() : pageSk.currentArtboard
+        if (raw) focused = require('sketch').fromSketchObject(raw)
       }
+    } catch (e) { /* ignore */ }
+    if (!focused || (focused.type !== 'Artboard' && focused.type !== 'Frame')) {
+      // 备用路径：画布视图的 currentArtboard
+      try {
+        const view = doc.sketchObject.currentView ? doc.sketchObject.currentView() : null
+        const raw2 = view && typeof view.currentArtboard === 'function' ? view.currentArtboard() : (view && view.currentArtboard)
+        if (raw2) focused = require('sketch').fromSketchObject(raw2)
+      } catch (e) { /* ignore */ }
+    }
+    if (focused && (focused.type === 'Artboard' || focused.type === 'Frame')) {
+      host = focused
+    } else {
+      // ② 选中图层所在画板
+      const sel = doc.selectedLayers.layers
+      if (sel.length) {
+        const s = sel[0]
+        if (s.type === 'Artboard' || s.type === 'Frame') {
+          host = s
+        } else {
+          const ab = s.getParentArtboard ? s.getParentArtboard() : null
+          if (ab) host = ab
+        }
+      }
+    }
+    if (host && host !== doc.selectedPage) {
+      cx = host.frame.width / 2
+      cy = host.frame.height / 2
+    } else if (boards.length) {
+      // ③ 第一个画板
+      host = boards[0]
+      cx = boards[0].frame.width / 2
+      cy = boards[0].frame.height / 2
     }
   } catch (e) { /* 默认插入页面原点附近 */ }
 
