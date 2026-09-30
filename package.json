@@ -1,6 +1,6 @@
 {
   "name": "inkline",
-  "version": "0.4.15",
+  "version": "0.5.0",
   "description": "Inkline 墨斗 — Sketch 标注 / 交付 / 素材插件（Kitchen + Sketch Measure 组合体）",
   "skpm": {
     "name": "Inkline",

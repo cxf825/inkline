@@ -34,6 +34,16 @@
   }
   header b { font-size: 14px; flex: 1; }
   header .mode { font-size: 11px; opacity: 0.5; }
+  #ifBtn {
+    border: 1px solid rgba(250,249,246,0.35);
+    background: transparent;
+    color: #FAF9F6;
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  #ifBtn:hover { background: rgba(250,249,246,0.15); }
   #searchRow {
     display: flex;
     gap: 8px;
@@ -175,7 +185,8 @@
   <header>
     <span class="seal">墨</span>
     <b>图标库</b>
-    <span class="mode">免登录模式</span>
+    <span class="mode">本地搜索 · Iconify</span>
+    <button id="ifBtn" title="切换到 iconfont 官网：原生中文搜索，需登录 iconfont.cn">iconfont 官网 ›</button>
   </header>
 
   <div id="searchRow">
@@ -295,6 +306,10 @@
       }
     })
     document.getElementById('go').onclick = doSearch
+    // 切换到 iconfont 官网模式（插件侧 loadURL，同一窗口内导航，登录态/Cookie 原生保留）
+    document.getElementById('ifBtn').onclick = function () {
+      window.postMessage('gotoIconfont', '')
+    }
     // 中文输入法：候选词确认的回车（isComposing / keyCode 229）不触发搜索，
     // 否则拼音还没上屏就搜了，表现为"输入汉字搜不到结果"
     qInput.onkeydown = function (e) {

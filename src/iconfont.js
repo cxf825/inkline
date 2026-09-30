@@ -5,9 +5,39 @@ import BrowserWindow from 'sketch-module-web-view'
 
 const PANEL_ID = 'inkline.icons.v1'
 
-// Kitchen 式图标库：独立窗口 + 搜索网格 + 点击/拖拽使用
-// 图源：Iconify（免登录，CORS 开放，搜索与 SVG 均在面板网页内 fetch，
-// 不经过插件侧 Obj-C 网络调用）。iconfont 账号登录版（关联我的项目/收藏）列 P1。
+// Kitchen 式图标库：双模式
+// 1) 本地搜索模式：自建 UI + Iconify（免登录，CORS 开放，面板内 fetch）
+// 2) iconfont 官网模式：同一窗口 loadURL 到 iconfont.cn——登录、中文搜索、
+//    收藏夹全部是官网原生能力（消息桥是 documentStart 的 WKUserScript，
+//    对窗口内任何后续导航的页面都生效，官网页里 window.postMessage 仍可通信）。
+//    左下角注入「返回本地搜索」悬浮球随时切回。iconfont 账号登录版（关联我的项目/收藏）列 P1。
+
+const ICONFONT_URL = 'https://www.iconfont.cn'
+
+// 官网模式注入的悬浮球：自愈式（页面内 setInterval 保证 SPA 路由切换后仍存在）
+const PILL_JS = [
+  '(function(){',
+  '  if (window.__inklinePillTimer) return',
+  '  function ensure(){',
+  '    if (document.getElementById("inkline-back-pill")) return',
+  '    if (!document.body) return',
+  '    var b = document.createElement("button")',
+  '    b.id = "inkline-back-pill"',
+  '    b.textContent = "‹ 返回本地搜索"',
+  '    b.title = "返回 Inkline 本地图标搜索（Iconify）"',
+  '    b.style.cssText = "position:fixed;left:12px;bottom:16px;z-index:2147483647;' +
+    'background:rgba(31,31,31,.85);color:#fff;border:none;border-radius:14px;' +
+    'padding:7px 14px;font-size:12px;cursor:pointer;' +
+    'font-family:-apple-system,\'PingFang SC\',sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.25)"',
+  '    b.onmouseenter = function(){ b.style.background = "#6B21A8" }',
+  '    b.onmouseleave = function(){ b.style.background = "rgba(31,31,31,.85)" }',
+  '    b.onclick = function(){ window.postMessage("gotoLocal", "") }',
+  '    document.body.appendChild(b)',
+  '  }',
+  '  ensure()',
+  '  window.__inklinePillTimer = setInterval(ensure, 2000)',
+  '})()'
+].join('\n')
 
 // 模块级窗口引用：开关切换用。严禁用 getWebview(identifier) 查找——
 // 它会重建 NavigationDelegate，在 Sketch 2026 上直接抛 Obj-C 异常
@@ -48,6 +78,29 @@ export function openIconLibrary() {
     } catch (e) {
       UI.alert('Inkline 出错了', String(e && e.message ? e.message : e))
     }
+  })
+
+  // ---------- 双模式切换 ----------
+  // 官网模式：同一窗口直接 loadURL iconfont.cn（Cookie/登录态原生保留），
+  // 注入「返回本地搜索」悬浮球（页面内自愈定时器，SPA 路由切换也不丢）
+  webContents.on('gotoIconfont', function () {
+    try {
+      browserWindow.loadURL(ICONFONT_URL)
+      // 给页面留出加载时间；悬浮球脚本自带自愈 interval，晚到也能补上
+      setTimeout(function () {
+        try {
+          browserWindow.webContents.executeJavaScript(PILL_JS)
+        } catch (e) { /* ignore */ }
+      }, 3000)
+    } catch (e) {
+      toast('打开 iconfont 官网失败：' + (e.message || e))
+    }
+  })
+  // 官网 → 本地：悬浮球点击
+  webContents.on('gotoLocal', function () {
+    try {
+      browserWindow.loadURL(require('./resources/icons.html'))
+    } catch (e) { /* ignore */ }
   })
 
   browserWindow.once('ready-to-show', function () {
