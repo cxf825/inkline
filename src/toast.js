@@ -4,14 +4,33 @@
 // 安全要点：持有模块级引用，绝不走 getWebview()（delegate 重建坑）；
 // setIgnoreMouseEvents(true) 让 toast 永不挡画布点击。
 import BrowserWindow from 'sketch-module-web-view'
+import { UI } from 'sketch'
 
-const IDENTIFIER = 'inkline.toast.v1'
+// identifier 必须每次创建都唯一：库的 BrowserWindow 构造器遇到同 identifier
+// 的已注册窗口会直接复用返回（fromPanel 重置 delegate → executeJavaScript
+// 永久静默失效）。面板关闭会连带销毁 toast 窗口（fiber.onCleanup），
+// 复用固定 identifier 就会撞上僵尸窗口 → toast 从此哑掉。
+const IDENT_PREFIX = 'inkline.toast.'
+let seq = 0
 const WIN_H = 40 // 12 上边距 + 16 行高 + 12 下边距
 const GAP = 16 // 与面板底边的间距
 
 let win = null
 let ready = false
 let hideTimer = null
+
+// 窗口是否还活着：面板关闭会触发 fiber.onCleanup 把 toast 窗口一起销毁，
+// 模块级 win 引用会变成"僵尸"——所有调用都静默异常，必须检测并重建
+function isLive(w) {
+  if (!w) return false
+  try {
+    if (w._destroyed) return false
+    w.getBounds()
+    return true
+  } catch (e) {
+    return false
+  }
+}
 
 // 粗略估算文本宽度（中文 ≈ 12px/字，ASCII ≈ 6.5px/字）
 function textWidth(s) {
@@ -21,6 +40,11 @@ function textWidth(s) {
 }
 
 function ensure(x, y, w) {
+  // 僵尸检测：面板关闭/重开后旧 toast 窗口可能已被销毁，引用还在
+  if (win && !isLive(win)) {
+    win = null
+    ready = false
+  }
   if (win) {
     try { win.setSize(w, WIN_H, false) } catch (e) { /* ignore */ }
     try { win.setPosition(x, y, false) } catch (e) { /* ignore */ }
@@ -32,7 +56,7 @@ function ensure(x, y, w) {
   const x0 = x
   const y0 = y
   win = new BrowserWindow({
-    identifier: IDENTIFIER,
+    identifier: IDENT_PREFIX + String(++seq),
     width: w,
     height: WIN_H,
     x: x,
@@ -97,6 +121,7 @@ export function showBelow(panel, msg) {
       } catch (e) { /* ignore */ }
     }, 1800)
   } catch (e) {
-    // 面板已关闭等场景：静默失败
+    // 面板已关闭等场景：toast 窗口彻底失败时兜底 Sketch 画布 HUD，绝不静默
+    try { UI.message(msg) } catch (e2) { /* ignore */ }
   }
 }

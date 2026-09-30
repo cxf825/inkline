@@ -91,20 +91,39 @@ function getSel() {
 }
 
 // ---------- 标注宽度 / 标注高度（由原"标注尺寸"拆分） ----------
+// 过滤掉 Inkline 自己的标注/便签图层：新建的标注组会被 Sketch 自动选中，
+// 不过滤的话，下一次标注会"套娃"在旧标注组上——用户看起来就是
+// 没选东西却凭空多出标注文件夹（重复点击重复建组）。
+function validSel(sel) {
+  return (sel || []).filter(function (l) {
+    try {
+      return l && l.frame && String(l.name || '').indexOf(PREFIX) !== 0
+    } catch (e) {
+      return false
+    }
+  })
+}
+
+// 校验并返回有效图层；不通过时 toast 提示并返回 null（绝不静默失败）
 function checkSel(sel, page) {
-  if (!page) return false
-  if (!sel.length) {
-    toast('请先选择要标注的图层')
-    return false
+  if (!page) {
+    toast('请先打开一个文档')
+    return null
   }
-  return true
+  const v = validSel(sel)
+  if (!v.length) {
+    toast(sel && sel.length ? '选中的是 Inkline 标注图层，请选择要标注的内容图层' : '请先选择要标注的图层')
+    return null
+  }
+  return v
 }
 
 export function markWidths() {
   const { sel, page } = getSel()
-  if (!checkSel(sel, page)) return
+  const layers = checkSel(sel, page)
+  if (!layers) return
   const anns = []
-  sel.forEach(function (layer) {
+  layers.forEach(function (layer) {
     const r = absRect(layer)
     // 宽度（图层下方水平标注线）
     const y = r.y + r.h + 8
@@ -115,14 +134,15 @@ export function markWidths() {
   })
   const g = new Group({ parent: page, layers: anns })
   g.name = PREFIX + '标注-宽度'
-  toast('已标注 ' + sel.length + ' 个图层的宽度')
+  toast('已标注 ' + layers.length + ' 个图层的宽度')
 }
 
 export function markHeights() {
   const { sel, page } = getSel()
-  if (!checkSel(sel, page)) return
+  const layers = checkSel(sel, page)
+  if (!layers) return
   const anns = []
-  sel.forEach(function (layer) {
+  layers.forEach(function (layer) {
     const r = absRect(layer)
     // 高度（图层右侧垂直标注线）
     const x = r.x + r.w + 8
@@ -133,29 +153,33 @@ export function markHeights() {
   })
   const g = new Group({ parent: page, layers: anns })
   g.name = PREFIX + '标注-高度'
-  toast('已标注 ' + sel.length + ' 个图层的高度')
+  toast('已标注 ' + layers.length + ' 个图层的高度')
 }
 
 // ---------- 标注间距 ----------
 export function markSpacings() {
   const { sel, page } = getSel()
-  if (!page) return
-  if (!sel.length) {
+  if (!page) {
+    toast('请先打开一个文档')
+    return
+  }
+  const layers = validSel(sel)
+  if (!layers.length) {
     toast('请选择图层：选 1 个标注到画板边缘，选 2 个标注两者间距')
     return
   }
   const anns = []
 
-  if (sel.length === 1) {
+  if (layers.length === 1) {
     // 单图层：标注到画板四边的距离
-    let art = sel[0].parent
+    let art = layers[0].parent
     while (art && art.type !== 'Artboard' && art.type !== 'SymbolMaster') art = art.parent
     if (!art || (art.type !== 'Artboard' && art.type !== 'SymbolMaster')) {
       toast('该图层不在画板内；请改选 2 个图层来标注间距')
       return
     }
     const ar = absRect(art)
-    const r = absRect(sel[0])
+    const r = absRect(layers[0])
     const cx = r.x + r.w / 2
     const cy = r.y + r.h / 2
     // 左、右（水平线，图层垂直居中）
@@ -180,9 +204,9 @@ export function markSpacings() {
     })
   } else {
     // 两两标注间距
-    for (let i = 0; i < sel.length - 1; i++) {
-      const a = absRect(sel[i])
-      const b = absRect(sel[i + 1])
+    for (let i = 0; i < layers.length - 1; i++) {
+      const a = absRect(layers[i])
+      const b = absRect(layers[i + 1])
       const hgap = Math.max(a.x - (b.x + b.w), b.x - (a.x + a.w))
       const vOverlap = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y)
       const vgap = Math.max(a.y - (b.y + b.h), b.y - (a.y + a.h))
@@ -217,13 +241,17 @@ export function markSpacings() {
 // ---------- 标注属性 ----------
 export function markProperties() {
   const { sel, page } = getSel()
-  if (!page) return
-  if (!sel.length) {
-    toast('请先选择要标注属性的图层')
+  if (!page) {
+    toast('请先打开一个文档')
+    return
+  }
+  const layers = validSel(sel)
+  if (!layers.length) {
+    toast(sel && sel.length ? '选中的是 Inkline 标注图层，请选择要标注的内容图层' : '请先选择要标注属性的图层')
     return
   }
   const anns = []
-  sel.forEach(function (layer) {
+  layers.forEach(function (layer) {
     const r = absRect(layer)
     const st = layer.style
     const lines = [layer.name, Math.round(r.w) + ' × ' + Math.round(r.h)]
@@ -257,7 +285,7 @@ export function markProperties() {
   })
   const g = new Group({ parent: page, layers: anns })
   g.name = PREFIX + '标注-属性'
-  toast('已标注 ' + sel.length + ' 个图层的属性')
+  toast('已标注 ' + layers.length + ' 个图层的属性')
 }
 
 // ---------- 清除标注 ----------

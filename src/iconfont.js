@@ -56,6 +56,11 @@ const DECOR_CSS = [
   'header .site-nav .quick-menu li,',
   'header .site-nav .quick-menu div,',
   'header .site-nav .quick-menu span { color: #2B2B2B !important }',
+  // 徽章数字（购物车数量/消息数）不能被上面的深色规则染黑，保持红底白字：
+  // 铃铛/购物车角标原生就是红底，但文字被 #2B2B2B 规则压成深色（2 类选择器 < 1类+1元素）
+  'header .site-nav .quick-menu .icon-car-count { color: #fff !important }',
+  // hover 弹窗里的角标官网是蓝底（#6272d6），统一改成红底白字
+  'header .site-nav .quick-menu .head-dropdown li .icon-car-count { background: red !important; color: #fff !important }',
   // —— 黑色 Inkline 顶栏（JS 注入）——
   '#inkline-top { display: flex; align-items: center; height: 44px; background: #1F1F1F; padding: 0 12px; gap: 10px; box-sizing: border-box; font-family: -apple-system, "PingFang SC", sans-serif }',
   '#inkline-top * { box-sizing: border-box }',
