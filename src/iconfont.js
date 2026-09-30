@@ -44,7 +44,9 @@ const DECOR_CSS = [
   // 必须纯 CSS 定位：收起态隐藏，展开态（html.inkline-drawer-open）由
   // buildDrawer 动态生成的 nth-child 规则钉到左下角（位置随登录态自动重算）
   'html:not(.inkline-drawer-open) .quick-menu > ul > li:not(.head-search):not(#inkline-sizes) { display: none !important }',
-  '#inkline-drawer { position: fixed; left: 12px; bottom: 16px; z-index: 2147483645; pointer-events: none; font-family: -apple-system, "PingFang SC", sans-serif }',
+  // z-index 必须低于官网 header 的 2048（header 自带层叠上下文，里面的 li 出不去），
+  // 否则胶囊背景会盖在 li 圆钮的白色图标上（实测白色被 92% 黑罩染成深灰，图标"消失"）
+  '#inkline-drawer { position: fixed; left: 12px; bottom: 16px; z-index: 2000; pointer-events: none; font-family: -apple-system, "PingFang SC", sans-serif }',
   '#inkline-drawer-handle { width: 36px; height: 36px; border-radius: 50%; background: rgba(31,31,31,.92); color: #FAF9F6; font-size: 15px; text-align: center; line-height: 36px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.25); pointer-events: auto }',
   '#inkline-drawer-pill { display: none; position: absolute; left: 0; bottom: 0; height: 36px; border-radius: 18px; background: rgba(31,31,31,.92); box-shadow: 0 2px 10px rgba(0,0,0,.25) }',
   'html.inkline-drawer-open #inkline-drawer-handle { display: none }',
@@ -91,6 +93,13 @@ const DECOR_CSS = [
   '.page-search-container .block-icon-list .icon-name { display: none !important }',
   '.page-search-container .block-icon-list .icon-twrap { width: 28px !important; height: 28px !important }',
   '.page-search-container .block-icon-list li svg.icon { width: 28px !important; height: 28px !important }',
+  // —— 收藏浮层：官网 hover 弹出的深色大 overlay（购物车/收藏/下载三大按钮）——
+  // 改为右上角一个小圆钮，只留收藏；显示改用我们自己的 CSS :hover（官网是 JS 控制的，不依赖）
+  '.page-search-container .block-icon-list li .icon-cover { position: absolute !important; top: 3px !important; right: 3px !important; left: auto !important; bottom: auto !important; width: auto !important; height: auto !important; background: none !important; padding: 0 !important; margin: 0 !important; display: none !important; z-index: 3 !important }',
+  '.page-search-container .block-icon-list li:hover .icon-cover { display: block !important }',
+  '.page-search-container .block-icon-list li .icon-cover .cover-item { display: none !important }',
+  '.page-search-container .block-icon-list li .icon-cover .cover-item[title="收藏"] { display: flex !important; align-items: center; justify-content: center; width: 20px !important; height: 20px !important; font-size: 11px !important; color: #666 !important; background: rgba(255,255,255,.95) !important; border: 1px solid #E5E2DA !important; border-radius: 50% !important; cursor: pointer; box-sizing: border-box }',
+  '.page-search-container .block-icon-list li .icon-cover .cover-item[title="收藏"]:hover { color: ' + BLUE + ' !important; border-color: ' + BLUE + ' !important }',
   // —— 分页浅色化 + 主题蓝 ——
   '.block-pagination-wrap { background: #FAF9F6 !important }',
   '.block-pagination li.active, .block-pagination li.active a { background: ' + BLUE + ' !important; color: #fff !important }',
@@ -182,6 +191,7 @@ const ICONFONT_INJECT_RAW = [
   '  }',
   '  document.addEventListener("mousedown", function(e){',
   '    if (!window.__inklineInsertMode) return',
+  '    if (e.target && e.target.closest && e.target.closest(".icon-cover")) return',
   '    var li = findCard(e.target)',
   '    if (!li) return',
   '    e.preventDefault(); e.stopPropagation()',
@@ -189,6 +199,7 @@ const ICONFONT_INJECT_RAW = [
   '  document.addEventListener("click", function(e){',
   '    if (!window.__inklineInsertMode) return',
   '    if (e.target && e.target.closest && e.target.closest("#inkline-top")) return',
+  '    if (e.target && e.target.closest && e.target.closest(".icon-cover")) return',
   '    var li = findCard(e.target)',
   '    if (!li) return',
   '    e.preventDefault(); e.stopPropagation()',
@@ -293,10 +304,17 @@ const ICONFONT_INJECT_RAW = [
   '    document.body.appendChild(d)',
   '    handle.onclick = function(){',
   '      refreshDrawerPos()',
-  '      var n = drawerItems().length',
-  '      if (!n) return',
-  '      pill.style.width = (n * 44 - 8) + "px"',
+  '      var idxs = drawerItems()',
+  '      if (!idxs.length) return',
   '      document.documentElement.classList.add("inkline-drawer-open")',
+  '      // 胶囊宽度按实际内容测量（登录态/未登录态 li 宽度差异大，固定值会装不下）',
+  '      requestAnimationFrame(function(){',
+  '        try {',
+  '          var lis = document.querySelectorAll(".quick-menu > ul > li")',
+  '          var last = lis[idxs[idxs.length - 1]]',
+  '          if (last) pill.style.width = Math.ceil(last.getBoundingClientRect().right - 12 + 8) + "px"',
+  '        } catch (e) { /* ignore */ }',
+  '      })',
   '    }',
   '  }',
   // ---- 白底标签栏（Kitchen 式）：图标库 / 我的项目 / 我的收藏 ----
@@ -525,5 +543,12 @@ function insertSvg(payload) {
     Math.round(h)
   )
   layer.name = 'icon-' + String(data.name || 'svg')
+  // 选中 + 画布镜头定位到新图标：无论画布当前滚到哪，插入后一眼看到落点
+  try {
+    doc.selectedLayers.layers = [layer]
+  } catch (e) { /* ignore */ }
+  try {
+    doc.centerOnLayer(layer)
+  } catch (e) { /* ignore */ }
   toast('图标已插入画布 ✅')
 }
