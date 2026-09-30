@@ -110,17 +110,34 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .more {
-    grid-column: 1 / -1;
+  /* ---------- 分页器 ---------- */
+  #pager {
+    flex: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 10px;
+    background: #fff;
+    border-top: 1px solid #E5E2DA;
+  }
+  #pager.show { display: flex; }
+  .pg {
+    min-width: 26px;
+    height: 26px;
     border: 1px solid #E5E2DA;
     background: #fff;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 12px;
-    padding: 10px 0;
+    padding: 0 6px;
     cursor: pointer;
-    color: #6B21A8;
+    color: #666;
   }
-  .more:hover { background: #F1EEE6; }
+  .pg:hover:not(:disabled) { background: #F1EEE6; }
+  .pg.on { background: #6B21A8; border-color: #6B21A8; color: #fff; font-weight: 600; }
+  .pg:disabled { opacity: 0.4; cursor: default; }
+  .pg-ellipsis { font-size: 12px; color: #BBB; padding: 0 2px; }
+  #pager .info { font-size: 11px; color: #AAA; margin-left: 8px; }
   .hint {
     grid-column: 1 / -1;
     font-size: 12px;
@@ -175,10 +192,12 @@
   </div>
 
   <div id="grid">
-    <div class="hint">输入关键词搜索（单次最多 999 个结果）<br>（Ant Design / Material / Tabler 等图标集）<br>点击图标插入画布</div>
+    <div class="hint">输入关键词搜索，支持中文（如 用户 / 购物车）<br>（Ant Design / Material / Tabler 等图标集）<br>点击图标插入画布</div>
   </div>
 
-  <footer>图源 Iconify（免登录） · iconfont 登录版开发中 · 支持中文关键词</footer>
+  <div id="pager"></div>
+
+  <footer>图源 Iconify（免登录） · 支持中文关键词搜索 · 页码翻页浏览</footer>
 
   <div id="toast"></div>
 
@@ -208,7 +227,42 @@
       '注册': 'register signup', '箭头': 'arrow', '对勾': 'check tick', '心形': 'heart',
       '闪电': 'lightning bolt', '太阳': 'sun', '月亮': 'moon', '天气': 'weather',
       '旅行': 'travel plane', '汽车': 'car', '礼物': 'gift', '标签': 'tag',
-      '书': 'book', '笔': 'pen pencil', '画笔': 'brush', '工具': 'tool wrench'
+      '书': 'book', '笔': 'pen pencil', '画笔': 'brush', '工具': 'tool wrench',
+      '房子': 'home house', '家': 'home house family', '地球': 'earth globe world',
+      '世界': 'world globe', '国家': 'country flag', '国旗': 'flag',
+      '人': 'person user people', '男人': 'man male', '女人': 'woman female',
+      '小孩': 'child kid baby', '手势': 'hand', '花朵': 'flower', '树': 'tree',
+      '植物': 'plant leaf', '动物': 'animal', '狗': 'dog', '猫': 'cat',
+      '食物': 'food', '餐': 'restaurant meal', '咖啡': 'coffee', '茶': 'tea',
+      '饮料': 'drink cup', '水': 'water drop', '火箭': 'rocket', '飞机': 'plane airplane',
+      '游戏': 'game', '电影': 'movie film', '电视': 'tv television', '耳机': 'headphone',
+      '打印': 'printer print', '电池': 'battery', '灯': 'lamp light bulb',
+      '灯泡': 'bulb light', '火': 'fire flame', '雨': 'rain', '雪': 'snow',
+      '风': 'wind', '蓝牙': 'bluetooth', '返回': 'back arrow left', '前进': 'forward arrow right',
+      '地址': 'address location', '银行': 'bank', '信用卡': 'credit card',
+      '折扣': 'discount sale', '会员': 'vip crown member', '排行': 'rank leaderboard',
+      '排名': 'rank trophy', '热门': 'hot fire popular', '推荐': 'recommend thumb',
+      '公告': 'announcement megaphone', '活动': 'activity event', '签到': 'checkin check',
+      '积分': 'points coin', '客服': 'service support headset', '二维码': 'qrcode',
+      '扫码': 'scan qrcode', '更多': 'more dots ellipsis', '顶部': 'top up arrow',
+      '历史': 'history', '主题': 'theme palette', '颜色': 'color palette',
+      '音量': 'volume', '静音': 'mute volume off', '表情': 'emoji face smile',
+      '笑脸': 'smile emoji', '徽章': 'badge medal', '奖杯': 'trophy award',
+      '钻石': 'diamond gem', '皇冠': 'crown', '包裹': 'package box', '箱子': 'box',
+      '卡车': 'truck delivery', '定位': 'location gps pin', '导航': 'navigation',
+      '路线': 'route', '闹钟': 'alarm clock', '秒表': 'timer stopwatch',
+      '分钟': 'timer', '信号': 'signal', '网格视图': 'grid view', '缩放': 'zoom',
+      '搜索放大': 'zoom search', '对话': 'conversation chat bubble', '气泡': 'bubble chat',
+      '发送': 'send', '附件': 'attachment paperclip', '书签': 'bookmark',
+      '日记': 'diary journal notebook', '报告': 'report document', '表格': 'table spreadsheet',
+      '公式': 'formula function', '计算': 'calculator calculate', '数学': 'math calculator',
+      '科学': 'science flask', '实验': 'experiment lab flask', '医生': 'doctor health',
+      '医院': 'hospital', '药': 'medicine pill', '心脏': 'heart health', '安全': 'safety shield',
+      '盾牌': 'shield', '警察': 'police', '法律': 'law justice', '法院': 'court law',
+      '旗帜': 'flag', '引擎': 'engine', '齿轮': 'gear cog settings', '扳手': 'wrench tool',
+      '锤子': 'hammer', '螺丝': 'screw', '电源': 'power', '插头': 'plug power',
+      '电池充电': 'battery charging', '太阳能': 'solar energy', '能源': 'energy',
+      '回收': 'recycle', '垃圾': 'trash delete', '瓶子': 'bottle', '杯子': 'cup'
     }
     function toEn(q) {
       var out = ' ' + q + ' '
@@ -221,7 +275,6 @@
     }
 
     var SIZE = 32
-    var CHUNK = 100  // 每批渲染 100 个
     var grid = document.getElementById('grid')
     var qInput = document.getElementById('q')
     var toastEl = document.getElementById('toast')
@@ -242,7 +295,12 @@
       }
     })
     document.getElementById('go').onclick = doSearch
-    qInput.onkeydown = function (e) { if (e.key === 'Enter') doSearch() }
+    // 中文输入法：候选词确认的回车（isComposing / keyCode 229）不触发搜索，
+    // 否则拼音还没上屏就搜了，表现为"输入汉字搜不到结果"
+    qInput.onkeydown = function (e) {
+      if (e.isComposing || e.keyCode === 229) return
+      if (e.key === 'Enter') doSearch()
+    }
     qInput.focus()
 
     function esc(s) {
@@ -250,7 +308,6 @@
     }
 
     var allIcons = []   // 本次搜索全部结果（最多 999）
-    var shown = 0       // 已渲染数量
     var svgCache = {}   // key → svg 字符串 | null(失败)
     var cardBoxes = {}  // key → 缩略图容器元素
 
@@ -301,29 +358,45 @@
       var raw = qInput.value.trim()
       if (!raw) return
       var en = toEn(raw)
+      // 映射后仍含中文 = 本地词库未收录该词，Iconify 不认中文 → 提前提示
+      var restZh = en.match(/[\u4e00-\u9fa5]+/g)
+      if (restZh) {
+        toast('「' + restZh.join('、') + '」暂未收录中文映射，试试英文关键词')
+        en = en.replace(/[\u4e00-\u9fa5]+/g, ' ').replace(/\s+/g, ' ').trim()
+        if (!en) return
+      }
       grid.innerHTML = '<div class="hint">搜索中…</div>'
+      pager.className = ''
       fetch('https://api.iconify.design/search?query=' + encodeURIComponent(en) + '&limit=999')
         .then(function (r) { return r.json() })
         .then(function (json) {
           allIcons = json.icons || []
+          page = 1
+          totalPages = Math.max(1, Math.ceil(allIcons.length / PER_PAGE))
           if (!allIcons.length) {
             grid.innerHTML = '<div class="hint">没有找到「' + esc(raw) + '」相关图标<br>试试英文关键词，如 user / home / heart</div>'
             return
           }
-          grid.innerHTML = ''
-          shown = 0
-          renderChunk()
+          renderPage()
         })
         .catch(function (err) {
           grid.innerHTML = '<div class="hint">搜索失败，请检查网络后重试<br><span style="color:#C0392B">' + esc(err && err.message ? err.message : err) + '</span></div>'
         })
     }
 
-    function renderChunk() {
-      removeMore()
+    /* ---------- 分页渲染：页码翻页替代"显示更多" ---------- */
+    var PER_PAGE = 100
+    var page = 1
+    var totalPages = 1
+    var pager = document.getElementById('pager')
+
+    function renderPage() {
+      grid.innerHTML = ''
+      grid.scrollTop = 0
       var bySet = {}
-      var end = Math.min(shown + CHUNK, allIcons.length)
-      for (var i = shown; i < end; i++) {
+      var start = (page - 1) * PER_PAGE
+      var end = Math.min(start + PER_PAGE, allIcons.length)
+      for (var i = start; i < end; i++) {
         var full = allIcons[i]
         var idx = full.indexOf(':')
         var set = full.slice(0, idx)
@@ -340,35 +413,67 @@
         nm.className = 'nm'
         nm.textContent = name
         card.appendChild(nm)
-        card.onclick = function () {
-          var k = this.getAttribute('data-key')
-          insertCard(k)
-        }
         card.setAttribute('data-key', key)
+        card.onclick = function () {
+          insertCard(this.getAttribute('data-key'))
+        }
         grid.appendChild(card)
         cardBoxes[key] = box
         ;(bySet[set] = bySet[set] || []).push(name)
       }
-      shown = end
-      if (shown < allIcons.length) addMore()
       // 按集合批量拉取 SVG 数据（入队串行，间隔 250ms）
       Object.keys(bySet).forEach(function (set) {
         enqueue(function () { return loadSet(set, bySet[set]) })
       })
+      renderPager()
     }
 
-    function removeMore() {
-      var m = document.getElementById('moreBtn')
-      if (m) m.remove()
+    function renderPager() {
+      var html = ''
+      html += '<button class="pg" id="pgPrev"' + (page <= 1 ? ' disabled' : '') + '>‹ 上一页</button>'
+      var nums = pageNumbers(page, totalPages)
+      for (var i = 0; i < nums.length; i++) {
+        var n = nums[i]
+        if (n === '…') {
+          html += '<span class="pg-ellipsis">…</span>'
+        } else {
+          html += '<button class="pg' + (n === page ? ' on' : '') + '" data-p="' + n + '">' + n + '</button>'
+        }
+      }
+      html += '<button class="pg" id="pgNext"' + (page >= totalPages ? ' disabled' : '') + '>下一页 ›</button>'
+      html += '<span class="info">' + allIcons.length + ' 个 · 第 ' + page + ' / ' + totalPages + ' 页</span>'
+      pager.innerHTML = html
+      pager.className = 'show'
+      var prev = document.getElementById('pgPrev')
+      var next = document.getElementById('pgNext')
+      if (prev) prev.onclick = function () { gotoPage(page - 1) }
+      if (next) next.onclick = function () { gotoPage(page + 1) }
+      pager.querySelectorAll('.pg[data-p]').forEach(function (b) {
+        b.onclick = function () { gotoPage(parseInt(this.getAttribute('data-p'), 10)) }
+      })
     }
 
-    function addMore() {
-      var btn = document.createElement('button')
-      btn.id = 'moreBtn'
-      btn.className = 'more'
-      btn.textContent = '显示更多（已显示 ' + shown + ' / ' + allIcons.length + ' 个）'
-      btn.onclick = function () { btn.textContent = '加载中…'; setTimeout(renderChunk, 30) }
-      grid.appendChild(btn)
+    // 页码序列：总页数少全显示；多则 1 … (c-1) c (c+1) … 末页
+    function pageNumbers(c, total) {
+      if (total <= 7) {
+        var arr = []
+        for (var i = 1; i <= total; i++) arr.push(i)
+        return arr
+      }
+      var out = [1, '…']
+      var s = Math.max(2, c - 1)
+      var e = Math.min(total - 1, c + 1)
+      if (s > 2) out.push('…')
+      for (var j = s; j <= e; j++) out.push(j)
+      if (e < total - 1) out.push('…')
+      out.push(total)
+      return out
+    }
+
+    function gotoPage(p) {
+      if (p < 1 || p > totalPages || p === page) return
+      page = p
+      renderPage()
     }
 
     function insertCard(key) {
