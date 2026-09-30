@@ -6,6 +6,7 @@ import { openIconLibrary } from './iconfont.js'
 import { mockText, mockTextCustom, mockImage, chooseImageDir, openWordsEditor } from './mock.js'
 import { exportSlices } from './assets.js'
 import { runSlice } from './slice.js'
+import { unlockAll } from './unlock.js'
 import { requestPalette, addSelectedColor, removeColor, copyColor } from './palette.js'
 import { setPanel, getPanel } from './panel-ref.js'
 import { attachFollow } from './follow.js'
@@ -21,6 +22,7 @@ const ACTIONS = {
   markProperties: markProperties,
   clearMarks: clearMarks,
   addNote: addNote,
+  unlockAll: unlockAll,
   exportSpec: exportSpec,
   exportSlices: exportSlices,
   iconLibrary: openIconLibrary,
@@ -51,7 +53,7 @@ function dispatchRun(payloadJson) {
 // 显示模式：text = 图标+文字（默认），icon = 仅图标；窗口宽度不同
 const STYLE_KEY = 'inkline.barStyle'
 const BAR_H = 56
-const W = 786 // 两种显示模式的按钮同宽，工具栏等长（宽度+高度拆分后多一格 44+2）
+const W = 832 // 两种显示模式的按钮同宽，工具栏等长（新增「解锁」后又多一格 44+2）
 const DRAWER_H = {
   mockText: 128,
   mockImg: 96,

@@ -1,6 +1,6 @@
 {
   "compatibleVersion": 3,
-  "bundleVersion": 35,
+  "bundleVersion": 36,
   "name": "Inkline",
   "author": "WorkBuddy",
   "description": "Inkline 墨斗 — 标注、离线规范导出、Iconfont、Mock 数据填充",
@@ -45,6 +45,13 @@
       "script": "./measure.js",
       "shortcut": "ctrl shift 5",
       "handlers": { "run": "clearMarks" }
+    },
+    {
+      "name": "解锁全部锁定图层",
+      "identifier": "inkline.unlock.all",
+      "script": "./unlock.js",
+      "shortcut": "ctrl shift l",
+      "handlers": { "run": "unlockAll" }
     },
     {
       "name": "注释便签",
@@ -103,6 +110,7 @@
       "inkline.mark.spacings",
       "inkline.mark.properties",
       "inkline.clear.marks",
+      "inkline.unlock.all",
       "inkline.note.add",
       "inkline.export.spec",
       "inkline.export.slices",

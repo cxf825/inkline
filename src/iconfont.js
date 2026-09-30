@@ -284,6 +284,8 @@ const ICONFONT_INJECT_RAW = [
   // 官网 hover 弹窗（消息/头像的 .head-dropdown / .head-dropdown-tips）默认在 li 下方
   // （top:53px），抽屉在窗口底部会被整个顶出屏幕外（只剩一条黑边）——改到抽屉上方弹出
   '      rules.push(base + " .head-dropdown, " + base + " .head-dropdown-tips { top: auto !important; bottom: 100% !important; margin-bottom: 4px !important; left: 0 !important; right: auto !important }")',
+  // 弹窗文字必须改浅色：装修规则把 quick-menu 内文字染成了深色，压在深色弹窗上看不见
+  '      rules.push(base + " .head-dropdown *, " + base + " .head-dropdown-tips * { color: #E6E6E6 !important }")',
   '    }',
   '    var st = document.createElement("style")',
   '    st.id = "inkline-drawer-pos"',
@@ -472,6 +474,81 @@ export function openIconLibrary() {
 
 // 面板 → 插件：把 SVG 字符串画入当前文档
 // payload: JSON 字符串 { svg, name }
+// 视口中心（页面坐标）：镜头当前看向的位置。
+// 经验公式（Sketch 插件社区）：真实滚动原点 = -scrollOrigin / zoomValue，
+// 视口尺寸 = 画布视图 frame / zoomValue。全程防御，取不到返回 null。
+function visibleCenter(doc) {
+  try {
+    const sk = doc.sketchObject
+    const view = typeof sk.currentView === 'function' ? sk.currentView() : sk.currentView
+    if (!view) return null
+    const so = typeof view.scrollOrigin === 'function' ? view.scrollOrigin() : view.scrollOrigin
+    if (!so) return null
+    const zoom = Number(typeof sk.zoomValue === 'function' ? sk.zoomValue() : sk.zoomValue) || 1
+    const f = typeof view.frame === 'function' ? view.frame() : view.frame
+    const size = f && f.size ? f.size : f
+    const w = Number(size && size.width)
+    const h = Number(size && size.height)
+    if (!(w > 0 && h > 0) || !(zoom > 0)) return null
+    return { x: (-Number(so.x) + w / 2) / zoom, y: (-Number(so.y) + h / 2) / zoom }
+  } catch (e) {
+    return null
+  }
+}
+
+// 插入目标：① 选中画板/选中图层所在画板（用户显式选择）
+// ② 镜头中心所在的画板；镜头不在任何画板上时直接落在镜头中心（页面级）
+// ③ 聚焦画板（currentArtboard 兜底） ④ 第一个画板 ⑤ 当前页
+// 返回 { host, pt }：pt 为页面绝对坐标落点；null 表示用 host 自身中心
+function pickTarget(doc) {
+  const boards = (doc.selectedPage.layers || []).filter(function (l) {
+    return l.type === 'Artboard' || l.type === 'Frame'
+  })
+  // ① 选中
+  try {
+    const sel = doc.selectedLayers.layers
+    if (sel.length) {
+      const s = sel[0]
+      let ab = null
+      if (s.type === 'Artboard' || s.type === 'Frame') ab = s
+      else if (s.getParentArtboard) ab = s.getParentArtboard()
+      if (ab) return { host: ab, pt: null }
+    }
+  } catch (e) { /* ignore */ }
+  // ② 镜头中心
+  try {
+    const vp = visibleCenter(doc)
+    if (vp) {
+      let hit = null
+      for (let i = 0; i < boards.length; i++) {
+        const f = boards[i].frame
+        if (vp.x >= f.x && vp.x <= f.x + f.width && vp.y >= f.y && vp.y <= f.y + f.height) {
+          hit = boards[i]
+          break
+        }
+      }
+      // 镜头在画板内 → 插到该画板的镜头处；在画板外空白 → 直接落在页面镜头中心
+      return { host: hit || doc.selectedPage, pt: vp }
+    }
+  } catch (e) { /* ignore */ }
+  // ③ 聚焦画板（双击进入的画板）
+  try {
+    const pageSk = doc.selectedPage.sketchObject
+    let raw = typeof pageSk.currentArtboard === 'function' ? pageSk.currentArtboard() : pageSk.currentArtboard
+    if (!raw) {
+      const view = typeof doc.sketchObject.currentView === 'function' ? doc.sketchObject.currentView() : doc.sketchObject.currentView
+      raw = view && (typeof view.currentArtboard === 'function' ? view.currentArtboard() : view.currentArtboard)
+    }
+    if (raw) {
+      const focused = require('sketch').fromSketchObject(raw)
+      if (focused && (focused.type === 'Artboard' || focused.type === 'Frame')) return { host: focused, pt: null }
+    }
+  } catch (e) { /* ignore */ }
+  // ④ 第一个画板 ⑤ 当前页
+  if (boards.length) return { host: boards[0], pt: null }
+  return { host: doc.selectedPage, pt: null }
+}
+
 function insertSvg(payload) {
   let data
   try {
@@ -500,58 +577,9 @@ function insertSvg(payload) {
     return
   }
 
-  // 插入目标画板：优先级 ① 当前聚焦的画板（双击进入的画板，走 Obj-C 桥 currentArtboard）
-  // ② 选中图层所在画板（选中画板本身也算） ③ 第一个画板，兜底当前页
-  const boards = (doc.selectedPage.layers || []).filter(function (l) {
-    return l.type === 'Artboard' || l.type === 'Frame'
-  })
-  let host = doc.selectedPage
-  let cx = 120
-  let cy = 120
-  try {
-    // ① 当前聚焦画板：MSPage.currentArtboard()（CocoaScript 下方法/属性两种形态都试）
-    let focused = null
-    try {
-      const pageSk = doc.selectedPage.sketchObject
-      if (pageSk) {
-        const raw = typeof pageSk.currentArtboard === 'function' ? pageSk.currentArtboard() : pageSk.currentArtboard
-        if (raw) focused = require('sketch').fromSketchObject(raw)
-      }
-    } catch (e) { /* ignore */ }
-    if (!focused || (focused.type !== 'Artboard' && focused.type !== 'Frame')) {
-      // 备用路径：画布视图的 currentArtboard
-      try {
-        const view = doc.sketchObject.currentView ? doc.sketchObject.currentView() : null
-        const raw2 = view && typeof view.currentArtboard === 'function' ? view.currentArtboard() : (view && view.currentArtboard)
-        if (raw2) focused = require('sketch').fromSketchObject(raw2)
-      } catch (e) { /* ignore */ }
-    }
-    if (focused && (focused.type === 'Artboard' || focused.type === 'Frame')) {
-      host = focused
-    } else {
-      // ② 选中图层所在画板
-      const sel = doc.selectedLayers.layers
-      if (sel.length) {
-        const s = sel[0]
-        if (s.type === 'Artboard' || s.type === 'Frame') {
-          host = s
-        } else {
-          const ab = s.getParentArtboard ? s.getParentArtboard() : null
-          if (ab) host = ab
-        }
-      }
-    }
-    if (host && host !== doc.selectedPage) {
-      cx = host.frame.width / 2
-      cy = host.frame.height / 2
-    } else if (boards.length) {
-      // ③ 第一个画板
-      host = boards[0]
-      cx = boards[0].frame.width / 2
-      cy = boards[0].frame.height / 2
-    }
-  } catch (e) { /* 默认插入页面原点附近 */ }
-
+  // 插入目标与落点
+  const t = pickTarget(doc)
+  const host = t.host
   layer.parent = host
   // SVG 以 64px 高度抓取，按用户选择的插入尺寸等比缩放
   let w = layer.frame.width
@@ -561,6 +589,19 @@ function insertSvg(payload) {
     const ratio = target / h
     w = w * ratio
     h = target
+  }
+  // 落点中心（宿主局部坐标）：pt 有值 = 镜头处（页面绝对坐标转宿主局部）；否则宿主中心
+  let cx, cy
+  if (t.pt) {
+    const isBoard = host.type === 'Artboard' || host.type === 'Frame'
+    cx = isBoard ? t.pt.x - host.frame.x : t.pt.x
+    cy = isBoard ? t.pt.y - host.frame.y : t.pt.y
+  } else if (host.type === 'Artboard' || host.type === 'Frame') {
+    cx = host.frame.width / 2
+    cy = host.frame.height / 2
+  } else {
+    cx = 120
+    cy = 120
   }
   // 连续插入时逐个错位，避免完全重叠在同一个点上
   const step = insertCount % 8
