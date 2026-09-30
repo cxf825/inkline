@@ -8,6 +8,7 @@ import { exportSlices } from './assets.js'
 import { runSlice } from './slice.js'
 import { requestPalette, addSelectedColor, removeColor, copyColor } from './palette.js'
 import { setPanel, getPanel } from './panel-ref.js'
+import { attachFollow } from './follow.js'
 import help from './help.js'
 
 // 换代标识：避免旧版 remembersWindowFrame 记忆的位置覆盖定位逻辑
@@ -164,86 +165,11 @@ export default function () {
   // 严禁改走 getWebview()（会重置 webview delegate 导致 executeJavaScript 静默失效）
   setPanel(browserWindow)
 
-  // ---------- 跟随 Sketch ----------
-  // 用 NSDocumentController 数文档（mainWindow 会受面板类窗口干扰，v0.4.9 失效）：
-  //   没有任何打开文档 → 面板关闭
-  //   有文档但窗口全部最小化 → 面板隐藏
-  //   有可见文档窗口 → 确保面板显示
-  // 库自身 movable-area 也用 setInterval 轮询，插件进程内定时器可用
-  let hiddenByFollow = false
-  const OUR_TITLES = ['Inkline · 墨斗', 'Inkline 图标库', 'Inkline · 自定义词库']
-  function docWindowState() {
-    const docs = NSDocumentController.sharedDocumentController().documents()
-    const n = docs.count()
-    if (n === 0) return 'none'
-    for (let i = 0; i < n; i++) {
-      const wcs = docs.objectAtIndex(i).windowControllers()
-      for (let j = 0; j < wcs.count(); j++) {
-        const w = wcs.objectAtIndex(j).window()
-        if (w && !w.isMiniaturized()) return 'visible'
-      }
-    }
-    return 'minimized'
-  }
-  function checkFollow(forceMin) {
-    try {
-      const st = forceMin ? 'minimized' : docWindowState()
-      if (st === 'visible') {
-        if (hiddenByFollow) {
-          hiddenByFollow = false
-          try { browserWindow.show() } catch (e) { /* ignore */ }
-          try { browserWindow.setAlwaysOnTop(true, 'floating', 1) } catch (e) { /* ignore */ }
-          try { browserWindow.moveTop() } catch (e) { /* ignore */ }
-        }
-      } else if (st === 'minimized') {
-        if (!hiddenByFollow) {
-          hiddenByFollow = true
-          try { browserWindow.hide() } catch (e) { /* ignore */ }
-        }
-      } else {
-        clearInterval(followTimer)
-        try { browserWindow.close() } catch (e) { /* ignore */ }
-      }
-    } catch (e) { /* ignore */ }
-  }
-  const followTimer = setInterval(checkFollow, 150)
-
-  // 双保险：系统通知直接监听窗口最小化/恢复/关闭（JS 定时器万一失效也能即时响应）；
-  // checkFollow 幂等，重复触发无副作用。
-  // 关键：WillMiniaturize 在最小化动画开始【前】触发——面板即时隐藏，
-  // 不等精灵动画结束（DidMiniaturize 要等约 0.3-0.5s 动画完成才发，v0.4.11 的延时根因）
-  const NC = NSNotificationCenter.defaultCenter()
-  const followObservers = []
-  ;[
-    'NSWindowWillMiniaturizeNotification',
-    'NSWindowDidMiniaturizeNotification',
-    'NSWindowDidDeminiaturizeNotification',
-    'NSWindowWillCloseNotification',
-  ].forEach(function (name) {
-    try {
-      followObservers.push(
-        NC.addObserverForName_object_queue_block_(name, null, null, function (notif) {
-          if (name === 'NSWindowWillMiniaturizeNotification') {
-            // 最小化动画开始前触发：立即跟随隐藏，不等动画结束。
-            // 排除我们自己的窗口（墨字面板/图标库/词库）
-            try {
-              const w = notif && notif.object()
-              if (w && OUR_TITLES.indexOf(String(w.title() || '')) !== -1) return
-            } catch (e) { /* ignore */ }
-            checkFollow(true)
-            return
-          }
-          checkFollow()
-        })
-      )
-    } catch (e) { /* ignore */ }
-  })
+  // ---------- 跟随 Sketch（公共逻辑见 follow.js，工具栏与图标库共用）----------
+  const disposeFollow = attachFollow(browserWindow)
 
   browserWindow.on('closed', function () {
-    clearInterval(followTimer)
-    followObservers.forEach(function (o) {
-      try { NC.removeObserver_(o) } catch (e) { /* ignore */ }
-    })
+    disposeFollow()
     setPanel(null)
   })
 

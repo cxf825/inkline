@@ -1,5 +1,6 @@
 import { getSelectedDocument, Rectangle, UI } from 'sketch'
 import { toast } from './panel-ref.js'
+import { attachFollow } from './follow.js'
 import { createLayerFromData } from 'sketch'
 import BrowserWindow from 'sketch-module-web-view'
 
@@ -12,7 +13,49 @@ const PANEL_ID = 'inkline.icons.v1'
 //    对窗口内任何后续导航的页面都生效，官网页里 window.postMessage 仍可通信）。
 //    左下角注入「返回本地搜索」悬浮球随时切回。iconfont 账号登录版（关联我的项目/收藏）列 P1。
 
-const ICONFONT_URL = 'https://www.iconfont.cn'
+const ICONFONT_URL = 'https://www.iconfont.cn/search/index?searchType=icon'
+
+// ---------- 官网模式「装修」样式 ----------
+// 隐藏官网的导航/营销/广告/页脚，重绘为 Inkline 图标库风格（米白底 + 紫色主题），
+// 只保留：搜索框、账号/登录区、筛选行、图标网格、分页 —— Kitchen 式的纯净图标库。
+// 数据与交互（登录、中文搜索、筛选、分页）全部是官网原生能力，我们只动外观。
+// 类名实测（2026-09-30）：header>.site-nav(#main-nav/.logo/.quick-menu)、.block-sub-banner、
+// .block-search-filter(.tag-item.current)、.page-search-container>.block-icon-list>li.J_icon_id_*、
+// .block-pagination-wrap、.footer
+const DECOR_CSS = [
+  // 顶栏：去 logo 与主导航，米白化，保留搜索框 + 账号/登录
+  'header .site-nav .logo,',
+  'header .site-nav #main-nav,',
+  'header .site-nav .btn-site-menu,',
+  'header .site-nav .main-nav-mask { display: none !important }',
+  'header, header .site-nav { background: #FAF9F6 !important; border-bottom: 1px solid #ECE9E1 !important }',
+  'header .site-nav .quick-menu,',
+  'header .site-nav .quick-menu a,',
+  'header .site-nav .quick-menu li,',
+  'header .site-nav .quick-menu div,',
+  'header .site-nav .quick-menu span { color: #2B2B2B !important }',
+  'header .s_input { background: #fff !important; border: 1px solid #E5E2DA !important; border-radius: 14px !important; color: #2B2B2B !important }',
+  // 黑色结果标题行（含 AI 营销入口）隐藏
+  '.block-sub-banner { display: none !important }',
+  // 筛选行浅色化 + 主题紫
+  '.block-search-filter { background: #FAF9F6 !important; border-bottom: 1px solid #ECE9E1 !important }',
+  '.block-search-filter a, .block-search-filter li, .block-search-filter span, .block-search-filter div { color: #444 !important }',
+  '.block-search-filter .tag-item.current { background: #6B21A8 !important }',
+  '.block-search-filter .tag-item.current span { color: #fff !important }',
+  // 页面背景
+  'body, .inmain, .page-manage-container, .wrap { background: #FAF9F6 !important }',
+  // 广告位与页脚隐藏
+  '.page-search-container > img, .footer { display: none !important }',
+  // 图标网格卡片化
+  '.page-search-container .block-icon-list { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)) !important; gap: 10px; padding: 14px 0 !important }',
+  '.page-search-container .block-icon-list > li { background: #fff !important; border-radius: 10px !important; border: 1px solid #ECE9E1 !important }',
+  // 分页浅色化 + 主题紫
+  '.block-pagination-wrap { background: #FAF9F6 !important }',
+  '.block-pagination li.active, .block-pagination li.active a { background: #6B21A8 !important; color: #fff !important }',
+  '.block-pagination li a { color: #444 !important }',
+  '.block-pagination .total { color: #666 !important }',
+  // 登录弹窗浮层保持官网原样，仅统一遮罩下页面底色（不动弹窗本身）
+].join('\n')
 
 // ---------- 官网模式注入脚本 ----------
 // 作用：① 底部注入 Inkline 操作条（插入模式开关 / 尺寸 / 返回本地）
@@ -21,18 +64,18 @@ const ICONFONT_URL = 'https://www.iconfont.cn'
 // （viewBox 0 0 1024 1024，内联含完整 path，无需逆向接口）
 // 名称在 .icon-name[title]；多色图标的颜色在 path 的 fill 属性上。
 // 自愈：页面内 2s 定时器重建 UI（SPA 路由切换 / 站点重渲染都不丢）；插件侧另有重注入兜底。
-const ICONFONT_INJECT = [
+const ICONFONT_INJECT_RAW = [
   '(function(){',
   '  if (window.__inklineReady) { window.__inklineShow && window.__inklineShow(); return }',
   '  window.__inklineReady = true',
   '  window.__inklineInsertMode = true',
   '  window.__inklineSize = 32',
-  // ---- 样式：插入模式下卡片 hover 出紫色描边 ----
+  // ---- 样式：界面装修 + 插入模式下卡片紫色描边 ----
   '  function addStyle(){',
   '    if (document.getElementById("inkline-style")) return',
   '    var s = document.createElement("style")',
   '    s.id = "inkline-style"',
-  '    s.textContent = "html.inkline-insert li[class*=\'J_icon_id_\']{outline:2px solid #6B21A8 !important;outline-offset:-2px;cursor:crosshair !important}"',
+  '    s.textContent = window.__inklineDecorCss + "\\nhtml.inkline-insert li[class*=\\"J_icon_id_\\"]{outline:2px solid #6B21A8 !important;outline-offset:-2px;cursor:crosshair !important}"',
   '    document.documentElement.appendChild(s)',
   '  }',
   '  function syncModeClass(){',
@@ -132,6 +175,12 @@ const ICONFONT_INJECT = [
   '      b.onclick = function(){ window.__inklineSize = sz; buildBar() }',
   '      bar.appendChild(b)',
   '    })',
+  '    var proj = btn("我的项目", { title: "打开 iconfont 我的项目" })',
+  '    proj.onclick = function(){ location.href = "https://www.iconfont.cn/manage/index?manage_type=myprojects" }',
+  '    bar.appendChild(proj)',
+  '    var fav = btn("我的收藏", { title: "打开 iconfont 我的收藏" })',
+  '    fav.onclick = function(){ location.href = "https://www.iconfont.cn/collections" }',
+  '    bar.appendChild(fav)',
   '    var back = btn("‹ 返回本地搜索", { title: "返回 Inkline 本地图标搜索（Iconify）" })',
   '    back.style.background = "rgba(192,57,43,.85)"',
   '    back.onclick = function(){ window.postMessage("gotoLocal", "") }',
@@ -149,6 +198,10 @@ const ICONFONT_INJECT = [
   '  }',
   '})()'
 ].join('\n')
+
+// 装修 CSS 先送进页面（注入脚本 addStyle 读取 window.__inklineDecorCss）
+const ICONFONT_INJECT =
+  'window.__inklineDecorCss = ' + JSON.stringify(DECOR_CSS) + ';\n' + ICONFONT_INJECT_RAW
 
 // 模块级窗口引用：开关切换用。严禁用 getWebview(identifier) 查找——
 // 它会重建 NavigationDelegate，在 Sketch 2026 上直接抛 Obj-C 异常
@@ -205,9 +258,13 @@ export function openIconLibrary() {
   })
   iconWin = browserWindow
 
+  // 跟随 Sketch：最小化 → 图标库一起隐藏；关闭全部文档 → 图标库一起关闭
+  const disposeFollow = attachFollow(browserWindow)
+
   browserWindow.on('closed', function () {
     if (iconWin === browserWindow) iconWin = null
     clearInjectTimer()
+    disposeFollow()
   })
 
   const webContents = browserWindow.webContents
