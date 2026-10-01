@@ -381,7 +381,7 @@ let iconWin = null
 // 官网模式的注入定时器（进入本地模式或窗口关闭时清理）
 let injectTimer = null
 
-// 连续插入的错位计数（避免多个图标叠在同一点）
+// 连续插入的错位计数（0..7 循环，避免多个图标叠在同一点，也避免无限增长）
 let insertCount = 0
 
 function clearInjectTimer() {
@@ -393,6 +393,7 @@ function clearInjectTimer() {
 
 // 反复注入官网脚本：页面自带自愈定时器，这里只做整页重载后的兜底。
 // executeJavaScript 是幂等的（脚本内 __inklineReady 守卫），重复调用只是重刷 UI。
+// 节奏前密后疏：加载初期快速补几刀，稳定后降到 8s 一次，少做无谓的 JS 注入。
 function startInjectLoop(win) {
   clearInjectTimer()
   const run = function () {
@@ -402,7 +403,7 @@ function startInjectLoop(win) {
   }
   setTimeout(run, 1200)
   setTimeout(run, 3000)
-  injectTimer = setInterval(run, 4000)
+  injectTimer = setInterval(run, 8000)
 }
 
 export function openIconLibrary() {
@@ -609,8 +610,8 @@ function insertSvg(payload) {
     cy = 120
   }
   // 连续插入时逐个错位，避免完全重叠在同一个点上
-  const step = insertCount % 8
-  insertCount++
+  const step = insertCount
+  insertCount = (insertCount + 1) % 8
   const dx = step * 8
   const dy = step * 8
   layer.frame = new Rectangle(

@@ -3,20 +3,39 @@
 <head>
 <meta charset="utf-8">
 <style>
+  /* ---------- 设计令牌 ---------- 与工具栏面板 / iconfont 官网装修同一支色板 */
+  :root {
+    --bg:        #FAF9F6;
+    --bg-hover:  #F1EEE6;
+    --line:      #E5E2DA;
+    --line-soft: #F0EDE6;
+    --ink:       #2B2B2B;
+    --ink-2:     #666666;
+    --ink-3:     #999999;
+    --ink-4:     #C9C4B8;
+    --accent:    #3868E6;
+    --accent-h:  #2B55C4;
+    --accent-t:  rgba(56, 104, 230, 0.10);
+    --seal:      #C0392B;
+    --r-sm:      6px;
+    --r-md:      8px;
+    --ease:      0.12s ease;
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
-    background: #FAF9F6;
-    color: #2B2B2B;
+    background: var(--bg);
+    color: var(--ink);
     user-select: none;
     display: flex;
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
   }
+  /* ---------- 黑色顶栏（与官网模式装修后的顶栏同款） ---------- */
   header {
     background: #1F1F1F;
-    color: #FAF9F6;
+    color: var(--bg);
     padding: 10px 12px;
     display: flex;
     align-items: center;
@@ -25,7 +44,7 @@
   }
   .seal {
     width: 22px; height: 22px;
-    background: #C0392B;
+    background: var(--seal);
     border-radius: 4px;
     color: #fff;
     font-size: 13px;
@@ -36,7 +55,7 @@
   }
   header b { font-size: 14px; flex: 1; }
   .ins-lbl { font-size: 11px; color: #DDD; flex: none; }
-  /* 插入图标开关：仅对 iconfont 官网模式生效，本地模式置灰展示 */
+  /* 插入图标开关：只对 iconfont 官网模式生效，本地模式点击即插入，故置灰展示 */
   #insTgl {
     width: 34px; height: 18px;
     border-radius: 9px;
@@ -56,23 +75,26 @@
   .mbtn {
     border: 1px solid rgba(250,249,246,0.35);
     background: transparent;
-    color: #FAF9F6;
-    border-radius: 6px;
+    color: var(--bg);
+    border-radius: var(--r-sm);
     font-size: 11px;
     padding: 5px 10px;
     cursor: pointer;
     flex: none;
     white-space: nowrap;
+    font-family: inherit;
+    transition: background var(--ease), border-color var(--ease);
   }
   .mbtn:hover { background: rgba(250,249,246,0.15); }
-  .mbtn.on { background: #3868E6; border-color: #3868E6; color: #fff; }
-  .mbtn.on:hover { background: #2B55C4; }
+  .mbtn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .mbtn.on:hover { background: var(--accent-h); }
+  /* ---------- 搜索行 ---------- */
   #searchRow {
     display: flex;
     gap: 8px;
     padding: 10px 12px;
     background: #fff;
-    border-bottom: 1px solid #E5E2DA;
+    border-bottom: 1px solid var(--line);
     align-items: center;
     flex: none;
   }
@@ -81,13 +103,14 @@
     flex: 1;
     display: flex;
     align-items: center;
-    border: 1px solid #E5E2DA;
+    border: 1px solid var(--line);
     border-radius: 14px;
-    background: #FAF9F6;
+    background: var(--bg);
     padding: 0 10px;
     min-width: 0;
+    transition: border-color var(--ease), background var(--ease);
   }
-  #sbox:focus-within { border-color: #3868E6; background: #fff; }
+  #sbox:focus-within { border-color: var(--accent); background: #fff; }
   #q {
     flex: 1;
     min-width: 0;
@@ -96,26 +119,30 @@
     padding: 8px 0;
     font-size: 13px;
     outline: none;
-    color: #2B2B2B;
+    color: var(--ink);
+    font-family: inherit;
   }
-  #sbox svg { flex: none; color: #999; }
+  #sbox svg { flex: none; color: var(--ink-3); }
   #sizes { display: flex; gap: 4px; align-items: center; flex: none; }
-  #sizes span { font-size: 11px; color: #999; margin-right: 2px; }
+  #sizes span { font-size: 11px; color: var(--ink-3); margin-right: 2px; }
   .sz {
-    border: 1px solid #E5E2DA;
+    border: 1px solid var(--line);
     background: #fff;
-    border-radius: 6px;
+    border-radius: var(--r-sm);
     font-size: 11px;
     padding: 6px 8px;
     cursor: pointer;
-    color: #666;
+    color: var(--ink-2);
+    font-family: inherit;
+    transition: background var(--ease), border-color var(--ease), color var(--ease);
   }
-  .sz:hover { background: #F1EEE6; }
-  .sz.on { background: rgba(56,104,230,0.1); border-color: #3868E6; color: #3868E6; font-weight: 600; }
-  /* Kitchen 式网格：白底 + 细网格线，无卡片描边，紧凑 6 列 */
+  .sz:hover { background: var(--bg-hover); }
+  .sz.on { background: var(--accent-t); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  /* ---------- 图标墙：白底 + 细网格线，紧凑 6 列（Kitchen 式） ---------- */
   #grid {
     flex: 1;
     overflow: auto;
+    overscroll-behavior: contain;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
@@ -123,18 +150,23 @@
     align-content: start;
     background: #fff;
   }
+  #grid::-webkit-scrollbar { width: 8px; }
+  #grid::-webkit-scrollbar-track { background: transparent; }
+  #grid::-webkit-scrollbar-thumb { background: #DCD8CE; border-radius: 4px; border: 2px solid #fff; }
+  #grid::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
   .card {
     background: #fff;
     border: 0;
-    border-right: 1px solid #F0EDE6;
-    border-bottom: 1px solid #F0EDE6;
+    border-right: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
     border-radius: 0;
     padding: 12px 4px 10px;
     text-align: center;
     cursor: pointer;
+    transition: background var(--ease);
   }
   .card:hover { background: #F0F5FE; }
-  .card:active { background: #E8F0FD; }
+  .card:active { background: #E1EBFD; }
   .card .svg-box { width: 28px; height: 28px; margin: 0 auto; }
   .card .svg-box svg { width: 28px; height: 28px; display: block; }
   .card .ld { font-size: 14px; color: #D5D2C8; line-height: 28px; }
@@ -147,32 +179,49 @@
     gap: 4px;
     padding: 8px 10px;
     background: #fff;
-    border-top: 1px solid #E5E2DA;
+    border-top: 1px solid var(--line);
   }
   #pager.show { display: flex; }
   .pg {
     min-width: 26px;
     height: 26px;
-    border: 1px solid #E5E2DA;
+    border: 1px solid var(--line);
     background: #fff;
-    border-radius: 6px;
+    border-radius: var(--r-sm);
     font-size: 12px;
     padding: 0 6px;
     cursor: pointer;
-    color: #666;
+    color: var(--ink-2);
+    font-family: inherit;
+    transition: background var(--ease), border-color var(--ease), color var(--ease);
   }
-  .pg:hover:not(:disabled) { background: #F1EEE6; }
-  .pg.on { background: #3868E6; border-color: #3868E6; color: #fff; font-weight: 600; }
+  .pg:hover:not(:disabled) { background: var(--bg-hover); }
+  .pg.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
   .pg:disabled { opacity: 0.4; cursor: default; }
   .pg-ellipsis { font-size: 12px; color: #BBB; padding: 0 2px; }
   #pager .info { font-size: 11px; color: #AAA; margin-left: 8px; }
+  /* ---------- 空态 / 提示 ---------- */
   .hint {
     grid-column: 1 / -1;
     font-size: 12px;
-    color: #999;
+    color: var(--ink-3);
     text-align: center;
-    padding: 30px 10px;
-    line-height: 1.8;
+    padding: 44px 20px;
+    line-height: 2;
+  }
+  .hint b { display: block; font-size: 14px; color: var(--ink); margin-bottom: 6px; }
+  .hint kbd {
+    display: inline-block;
+    min-width: 18px;
+    padding: 1px 5px;
+    margin: 0 2px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 11px;
+    color: var(--ink-2);
+    font-family: inherit;
   }
   #toast {
     position: absolute;
@@ -182,7 +231,7 @@
     color: #fff;
     font-size: 12px;
     padding: 7px 14px;
-    border-radius: 6px;
+    border-radius: var(--r-sm);
     opacity: 0;
     transition: opacity 0.2s;
     pointer-events: none;
@@ -218,7 +267,12 @@
   </div>
 
   <div id="grid">
-    <div class="hint">输入关键词搜索，支持中文（如 用户 / 购物车）<br>（Ant Design / Material / Tabler 等图标集）<br>点击图标插入画布</div>
+    <div class="hint">
+      <b>搜图标，点一下落到画布</b>
+      支持中文（用户 / 购物车 / 首页…）与英文关键词<br>
+      图标集：Ant Design · Material · Tabler 等<br>
+      <kbd>⏎</kbd> 搜索　<kbd>点击</kbd> 插入
+    </div>
   </div>
 
   <div id="pager"></div>
@@ -288,14 +342,18 @@
       '电池充电': 'battery charging', '太阳能': 'solar energy', '能源': 'energy',
       '回收': 'recycle', '垃圾': 'trash delete', '瓶子': 'bottle', '杯子': 'cup'
     }
+    /* 长词优先替换（"购物车" 必须先于 "购物"），键长序只需排一次，缓存起来 */
+    var ZH_KEYS = Object.keys(ZH2EN).sort(function (a, b) { return b.length - a.length })
+    var zhCache = {}
     function toEn(q) {
+      if (zhCache[q] !== undefined) return zhCache[q]
       var out = ' ' + q + ' '
-      Object.keys(ZH2EN)
-        .sort(function (a, b) { return b.length - a.length })
-        .forEach(function (k) {
-          if (out.indexOf(k) !== -1) out = out.split(k).join(' ' + ZH2EN[k] + ' ')
-        })
-      return out.trim().replace(/\s+/g, ' ') || q
+      ZH_KEYS.forEach(function (k) {
+        if (out.indexOf(k) !== -1) out = out.split(k).join(' ' + ZH2EN[k] + ' ')
+      })
+      out = out.trim().replace(/\s+/g, ' ') || q
+      zhCache[q] = out
+      return out
     }
 
     var SIZE = 32
@@ -318,14 +376,13 @@
         SIZE = parseInt(b.getAttribute('data-s'), 10)
       }
     })
-    // 「插入图标」开关仅对 iconfont 官网模式生效，本地模式置灰 + 提示
+    // 「插入图标」开关仅对 iconfont 官网模式生效，本地模式点击图标即插入
     document.getElementById('insTgl').onclick = function () {
-      toast('插入图标开关仅对 iconfont 官网模式生效，本地图标点击即插入')
+      toast('本地模式点击图标即插入；插入开关是 iconfont 官网模式用的')
     }
-    document.getElementById('go') && (document.getElementById('go').onclick = doSearch)
     // 切换到 iconfont 官网模式（插件侧 loadURL，同一窗口内导航，登录态/Cookie 原生保留）
     document.getElementById('ifBtn').onclick = function () {
-      window.postMessage('gotoIconfont', '')
+      try { window.postMessage('gotoIconfont', '') } catch (e) { /* ignore */ }
     }
     // 中文输入法：候选词确认的回车（isComposing / keyCode 229）不触发搜索，
     // 否则拼音还没上屏就搜了，表现为"输入汉字搜不到结果"
@@ -405,13 +462,13 @@
           page = 1
           totalPages = Math.max(1, Math.ceil(allIcons.length / PER_PAGE))
           if (!allIcons.length) {
-            grid.innerHTML = '<div class="hint">没有找到「' + esc(raw) + '」相关图标<br>试试英文关键词，如 user / home / heart</div>'
+            grid.innerHTML = '<div class="hint"><b>没有找到「' + esc(raw) + '」</b>试试英文关键词，如 user / home / heart</div>'
             return
           }
           renderPage()
         })
         .catch(function (err) {
-          grid.innerHTML = '<div class="hint">搜索失败，请检查网络后重试<br><span style="color:#C0392B">' + esc(err && err.message ? err.message : err) + '</span></div>'
+          grid.innerHTML = '<div class="hint"><b>搜索失败</b>请检查网络后重试<br><span style="color:var(--seal)">' + esc(err && err.message ? err.message : err) + '</span></div>'
         })
     }
 

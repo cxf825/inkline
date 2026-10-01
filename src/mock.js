@@ -1,5 +1,6 @@
 import sketch, { Image, UI, getSelectedDocument } from 'sketch'
 import { toast } from './panel-ref.js'
+import { isLive } from './util.js'
 import BrowserWindow from 'sketch-module-web-view'
 
 // ---------------- Mock 文本数据（纯本地生成，无网络依赖） ----------------
@@ -143,14 +144,23 @@ const EDITOR_ID = 'inkline.words.v1'
 // 词库编辑器窗口的模块级引用（与图标库同策略：严禁 getWebview 反查）
 let wordsWin = null
 
+// identifier 唯一化计数器：库遇到同 identifier 的已注册窗口会直接复用（僵尸窗口），
+// 复用后 executeJavaScript 永久静默 —— 面板关闭触发 fiber.onCleanup 会连带销毁
+// 词库窗口，留下僵尸引用，之后再点「编辑词库」就再也打不开（同 toast 的坑）。
+let wordsSeq = 0
+
 // 词库编辑器：独立小窗口，一行一条
 export function openWordsEditor() {
   if (wordsWin) {
-    try { wordsWin.show() } catch (e) { /* ignore */ }
-    return
+    if (isLive(wordsWin)) {
+      // 已打开 → 直接前置
+      try { wordsWin.show() } catch (e) { /* ignore */ }
+      return
+    }
+    wordsWin = null // 僵尸引用：丢弃后重建
   }
   const win = new BrowserWindow({
-    identifier: EDITOR_ID,
+    identifier: EDITOR_ID + '.' + (++wordsSeq),
     width: 420,
     height: 520,
     minWidth: 340,
@@ -160,7 +170,7 @@ export function openWordsEditor() {
     movable: true,
     alwaysOnTop: true,
     hidesOnDeactivate: true,
-    remembersWindowFrame: true
+    remembersWindowFrame: false
   })
   wordsWin = win
   win.on('closed', function () {

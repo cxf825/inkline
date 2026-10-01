@@ -3,49 +3,69 @@
 <head>
 <meta charset="utf-8">
 <style>
+  /* 设计令牌：与工具栏面板同一支色板 */
+  :root {
+    --bg:       #FAF9F6;
+    --bg-hover: #F1EEE6;
+    --line:     #E5E2DA;
+    --ink:      #2B2B2B;
+    --ink-2:    #666666;
+    --ink-3:    #999999;
+    --accent:   #3868E6;
+    --accent-h: #2B55C4;
+    --accent-t: rgba(56, 104, 230, 0.10);
+    --r-md:     8px;
+    --ease:     0.12s ease;
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
-    background: #FAF9F6;
-    color: #2B2B2B;
+    background: var(--bg);
+    color: var(--ink);
     display: flex;
     flex-direction: column;
     height: 100vh;
     padding: 14px;
   }
   h2 { font-size: 14px; margin-bottom: 4px; }
-  .hint { font-size: 12px; color: #999; margin-bottom: 10px; line-height: 1.6; }
+  .hint { font-size: 12px; color: var(--ink-3); margin-bottom: 10px; line-height: 1.6; }
   textarea {
     flex: 1;
-    border: 1px solid #E5E2DA;
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
     background: #fff;
     padding: 10px;
     font-size: 13px;
     line-height: 1.7;
     font-family: inherit;
+    color: var(--ink);
     resize: none;
     outline: none;
+    transition: border-color var(--ease);
   }
-  textarea:focus { border-color: #6B21A8; }
+  textarea:focus { border-color: var(--accent); }
   .row { display: flex; gap: 8px; margin-top: 10px; }
   button {
     flex: 1;
     padding: 9px 0;
     font-size: 13px;
-    border-radius: 8px;
-    border: 1px solid #E5E2DA;
+    font-family: inherit;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line);
     background: #fff;
+    color: var(--ink);
     cursor: pointer;
+    transition: background var(--ease), color var(--ease), border-color var(--ease);
   }
-  button:hover { background: #F1EEE6; }
+  button:hover { background: var(--bg-hover); }
   #save {
-    background: #6B21A8;
-    border-color: #6B21A8;
+    background: var(--accent);
+    border-color: var(--accent);
     color: #fff;
+    font-weight: 600;
   }
-  #save:hover { background: #58187F; }
-  #count { font-size: 12px; color: #6B21A8; margin-top: 8px; text-align: right; }
+  #save:hover { background: var(--accent-h); }
+  #count { font-size: 12px; color: var(--accent); margin-top: 8px; text-align: right; }
 </style>
 </head>
 <body>
@@ -77,6 +97,8 @@
     document.getElementById('cancel').onclick = function () {
       window.postMessage('close', '')
     }
+    refreshCount()
+    box.focus()
   </script>
 </body>
 </html>

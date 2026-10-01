@@ -219,7 +219,7 @@ function buildHtml(data, folder, colorList, fontList) {
     '#side h2{font-size:12px;color:#999;margin:6px 4px;letter-spacing:1px}\n' +
     '.ab{padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:4px;border:1px solid transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n' +
     '.ab:hover{background:#F1EEE6}\n' +
-    '.ab.on{background:#6B21A81A;border-color:#6B21A8;color:#6B21A8;font-weight:600}\n' +
+    '.ab.on{background:rgba(56,104,230,0.10);border-color:#3868E6;color:#3868E6;font-weight:600}\n' +
     '#mid{flex:1;display:flex;flex-direction:column;overflow:hidden}\n' +
     '#topbar{padding:12px 18px;border-bottom:1px solid #E5E2DA;display:flex;align-items:center;gap:10px;background:#fff}\n' +
     '#topbar .seal{width:20px;height:20px;background:#C0392B;border-radius:4px;color:#fff;font-size:12px;line-height:20px;text-align:center}\n' +
@@ -242,13 +242,13 @@ function buildHtml(data, folder, colorList, fontList) {
     '.hint{color:#BBB;font-size:13px;text-align:center;margin-top:40px}\n' +
     '.tab{font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #E5E2DA;background:#fff;cursor:pointer;margin-left:6px}\n' +
     '.tab:hover{background:#F1EEE6}\n' +
-    '.tab.on{background:#6B21A8;border-color:#6B21A8;color:#fff;font-weight:600}\n' +
+    '.tab.on{background:#3868E6;border-color:#3868E6;color:#fff;font-weight:600}\n' +
     '#palette{flex:1;overflow:auto;padding:30px 40px;display:none}\n' +
     '#palette h3{font-size:15px;margin:24px 0 14px}\n' +
     '#palette h3:first-child{margin-top:0}\n' +
     '.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}\n' +
     '.ccard{background:#fff;border:1px solid #E5E2DA;border-radius:10px;padding:10px;cursor:pointer;transition:transform .1s}\n' +
-    '.ccard:hover{transform:translateY(-2px);border-color:#6B21A8}\n' +
+    '.ccard:hover{transform:translateY(-2px);border-color:#3868E6}\n' +
     '.cchip{height:44px;border-radius:6px;border:1px solid rgba(0,0,0,0.08)}\n' +
     '.cmeta{font-size:12px;margin-top:8px;display:flex;justify-content:space-between;color:#444}\n' +
     '.cmeta b{color:#999;font-weight:500}\n' +
@@ -301,7 +301,7 @@ function buildHtml(data, folder, colorList, fontList) {
     '  } else h+=\'<div class=hint>本页没有收集到字体样式</div>\';\n' +
     '  p.innerHTML=h;\n' +
     '}\n' +
-    'function toggleMk(){SHOWMK=!SHOWMK;Array.prototype.forEach.call(document.querySelectorAll(".mk"),function(d){d.style.display=SHOWMK?"":"none"});var b=document.getElementById("mkt");b.textContent=SHOWMK?"隐藏标注":"显示标注";b.style.background=SHOWMK?"":"#6B21A8";b.style.color=SHOWMK?"":"#fff"}\n' +
+    'function toggleMk(){SHOWMK=!SHOWMK;Array.prototype.forEach.call(document.querySelectorAll(".mk"),function(d){d.style.display=SHOWMK?"":"none"});var b=document.getElementById("mkt");b.textContent=SHOWMK?"隐藏标注":"显示标注";b.style.background=SHOWMK?"":"#3868E6";b.style.color=SHOWMK?"":"#fff"}\n' +
     'function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}\n' +
     'function render(){\n' +
     '  var list=document.getElementById("ablist");list.innerHTML="";\n' +

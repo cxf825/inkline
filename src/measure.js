@@ -171,6 +171,11 @@ export function markSpacings() {
   const anns = []
 
   if (layers.length === 1) {
+    // 选中画板本身：它没有"父画板"，标不出到边缘的距离 —— 提前说清怎么用
+    if (layers[0].type === 'Artboard' || layers[0].type === 'SymbolMaster') {
+      toast('画板本身没有参照边；请选画板内的 1 个图层标注到画板边缘，或选 2 个图层标注彼此间距')
+      return
+    }
     // 单图层：标注到画板四边的距离
     let art = layers[0].parent
     while (art && art.type !== 'Artboard' && art.type !== 'SymbolMaster') art = art.parent

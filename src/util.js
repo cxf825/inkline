@@ -1,7 +1,23 @@
-// 跨模块共享的小工具：标注前缀、纯官方 API 坐标计算、色值处理
+// 跨模块共享的小工具：标注前缀、纯官方 API 坐标计算、色值处理、窗口存活检测
 
 // 标注/便签图层统一前缀：清除标注、规范导出、色板收集都靠它识别并跳过
 export const PREFIX = 'INK-'
+
+// 窗口引用是否仍然可用。
+// sketch-module-web-view 的窗口会被所属 fiber 的 onCleanup 连带销毁，
+// 模块级引用随即变成"僵尸"——此后 getBounds/setPosition/executeJavaScript
+// 全部静默异常，表现为"功能突然哑掉"。所有持有窗口引用的模块在复用前
+// 必须先过这道检测，不通过就当 null 处理并重建。
+export function isLive(win) {
+  if (!win) return false
+  try {
+    if (win._destroyed) return false
+    win.getBounds()
+    return true
+  } catch (e) {
+    return false
+  }
+}
 
 // 图层画布绝对坐标：从当前图层逐层向上累加 frame（相对父级坐标）。
 // 不依赖底层 MSLayer API（Sketch 2026 已移除 absoluteRect）

@@ -3,18 +3,39 @@
 <head>
 <meta charset="utf-8">
 <style>
+  /* ---------- 设计令牌 ----------
+     全插件统一色板：品牌蓝 #3868E6（图标库 / iconfont 官网装修同一支），
+     印章红 #C0392B（Logo / 危险操作），暖灰阶做底与描边。
+     画布标注色（标注红 / 间距蓝 / 属性紫）不在这里——那是图层颜色，与界面无关。 */
+  :root {
+    --bg:        #FAF9F6;
+    --bg-hover:  #F1EEE6;
+    --bg-press:  #E7E3D8;
+    --line:      #E5E2DA;
+    --line-soft: #F0EDE6;
+    --ink:       #2B2B2B;
+    --ink-2:     #666666;
+    --ink-3:     #999999;
+    --ink-4:     #C9C4B8;
+    --accent:    #3868E6;
+    --accent-h:  #2B55C4;
+    --accent-t:  rgba(56, 104, 230, 0.10);
+    --seal:      #C0392B;
+    --r-sm:      6px;
+    --r-md:      8px;
+    --ease:      0.12s ease;
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
-    background: #FAF9F6;
-    color: #2B2B2B;
+    background: var(--bg);
+    color: var(--ink);
     user-select: none;
     -webkit-user-select: none;
     display: flex;
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
-    border-radius: 10px;
   }
   /* ---------- 横向工具栏 ---------- */
   /* 拖动方案：库内置的 data-app-region 机制（系统级 60fps 跟手移动）。
@@ -26,15 +47,19 @@
     align-items: center;
     gap: 2px;
     padding: 0 10px;
-    background: #FAF9F6;
+    background: var(--bg);
     cursor: move;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--ease);
   }
+  /* 抽屉展开时给工具栏补一条分隔线，把「工具条 / 面板」两层视觉分开 */
+  body.drawer-open .bar { border-bottom-color: var(--line); }
   /* 「墨」Logo = 主拖拽把手：面积大好按住；帮助入口已移到设置抽屉 */
   .logo {
     flex: none;
     width: 34px; height: 34px;
-    background: #C0392B;
-    border-radius: 8px;
+    background: var(--seal);
+    border-radius: var(--r-md);
     color: #fff;
     font-size: 16px;
     line-height: 34px;
@@ -51,14 +76,14 @@
     justify-content: center;
     gap: 4px;
     width: 44px; height: 46px;
-    border-radius: 8px;
+    border-radius: var(--r-md);
     cursor: pointer;
     color: #444;
-    transition: background 0.12s;
+    transition: background var(--ease), color var(--ease);
   }
-  .tbtn:hover { background: #EDEAE1; }
-  .tbtn:active { background: #E2DED2; }
-  .tbtn.active { background: #6B21A81A; color: #6B21A8; }
+  .tbtn:hover { background: var(--bg-hover); }
+  .tbtn:active { background: var(--bg-press); }
+  .tbtn.active { background: var(--accent-t); color: var(--accent); }
   /* 文字 + 三角 同一行 */
   .tlbl {
     display: flex;
@@ -74,12 +99,12 @@
   .sep {
     flex: none;
     width: 1px; height: 24px;
-    background: #E0DCD2;
+    background: var(--line);
     margin: 0 5px;
   }
   .spacer { flex: 1; }
-  .close { color: #999; }
-  .close:hover { background: #C0392B1A; color: #C0392B; }
+  .close { color: var(--ink-3); }
+  .close:hover { background: rgba(192, 57, 43, 0.10); color: var(--seal); }
   /* 统一面性图标（填充绘制，颜色跟随文字；个别细节路径自带白色高光） */
   .ic {
     width: 22px; height: 22px;
@@ -87,40 +112,51 @@
   }
 
   /* ---------- 下方抽屉区 ---------- */
+  /* 高度不再写死：展开后由 #dwarp 实测内容高度回报插件，窗口按内容伸缩 */
   .drawer {
     flex: 1;
     display: none;
     overflow-y: auto;
-    border-top: 1px solid #E5E2DA;
+    overscroll-behavior: contain;
+    border-top: 1px solid var(--line);
     padding: 10px 12px;
+    background: #fff;
   }
   .drawer.visible { display: block; }
-  .drawer-title { font-size: 11px; color: #999; margin-bottom: 8px; }
+  .drawer::-webkit-scrollbar { width: 8px; }
+  .drawer::-webkit-scrollbar-track { background: transparent; }
+  .drawer::-webkit-scrollbar-thumb { background: #DCD8CE; border-radius: 4px; border: 2px solid #fff; }
+  .drawer::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
+  .drawer-title { font-size: 11px; color: var(--ink-3); margin-bottom: 8px; line-height: 1.5; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
-    border: 1px solid #E5E2DA;
-    border-radius: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
     background: #fff;
     font-size: 12px;
     padding: 5px 10px;
     cursor: pointer;
+    transition: background var(--ease), border-color var(--ease), color var(--ease);
   }
-  .chip:hover { background: #6B21A81A; border-color: #6B21A8; color: #6B21A8; }
-  .chip.on { background: #6B21A81A; border-color: #6B21A8; color: #6B21A8; }
-  .drawer-sub { font-size: 11px; color: #999; margin: 8px 0 6px; }
+  .chip:hover { background: var(--accent-t); border-color: var(--accent); color: var(--accent); }
+  .chip:active { background: rgba(56, 104, 230, 0.18); }
+  .chip.on { background: var(--accent-t); border-color: var(--accent); color: var(--accent); }
+  .drawer-sub { font-size: 11px; color: var(--ink-3); margin: 10px 0 6px; }
   .cchip {
-    width: 24px; height: 22px;
-    border-radius: 5px;
+    width: 26px; height: 24px;
+    border-radius: var(--r-sm);
     border: 1px solid rgba(0,0,0,0.12);
     cursor: pointer;
     position: relative;
+    transition: transform var(--ease);
   }
+  .cchip:hover { transform: scale(1.12); }
   .cchip .del {
     position: absolute;
     top: -7px; right: -7px;
     width: 14px; height: 14px;
     border-radius: 7px;
-    background: #C0392B;
+    background: var(--seal);
     color: #fff;
     font-size: 10px;
     line-height: 14px;
@@ -128,7 +164,7 @@
     display: none;
   }
   .cchip:hover .del { display: block; }
-  .empty { font-size: 11px; color: #C9C4B8; }
+  .empty { font-size: 11px; color: var(--ink-4); line-height: 1.6; }
 
   .slice-row {
     display: flex;
@@ -141,32 +177,29 @@
     align-items: center;
     gap: 4px;
     font-size: 11px;
-    color: #666;
+    color: var(--ink-2);
   }
   .slice-row input[type=number] {
     width: 46px;
     padding: 4px 5px;
-    border: 1px solid #E5E2DA;
-    border-radius: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
     font-size: 12px;
+    outline: none;
   }
+  .slice-row input[type=number]:focus { border-color: var(--accent); }
   #sliceGo { font-weight: 600; }
-
-  #toast {
-    position: fixed;
-    left: 50%; bottom: 12px;
-    transform: translateX(-50%);
-    background: rgba(31,31,31,0.9);
-    color: #fff;
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-    white-space: nowrap;
+  /* 抽屉页脚：版本号弱化展示，方便确认当前装的是哪一版 */
+  .drawer-foot {
+    margin-top: 14px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 11px;
+    color: var(--ink-4);
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
   }
-  #toast.show { opacity: 1; }
 </style>
 </head>
 <body class="mode-text">
@@ -215,6 +248,10 @@
   </div>
 
   <div id="drawer" class="drawer">
+    <!-- #dwrap 只做一件事：给插件报"当前抽屉内容真实高度"。
+         直接量 .drawer 的 scrollHeight 不行——它是滚动容器，内容比视口矮时
+         也会返回视口高度，窗口就永远缩不回去。 -->
+    <div id="dwrap">
     <!-- Mock 文本 -->
     <div id="sec-mockText" style="display:none">
       <div class="drawer-title">选中文本图层 → 点击填充</div>
@@ -272,18 +309,12 @@
         <div class="chip" id="optIcon" data-run='{"name":"setBarStyle","arg":"icon"}'>仅图标</div>
         <div class="chip" data-run='{"name":"help"}' title="版本与功能说明">使用帮助…</div>
       </div>
+      <div class="drawer-foot"><span>Inkline · 墨斗</span><span id="verLine">v—</span></div>
     </div>
+    </div><!-- /#dwrap -->
   </div>
 
-  <div id="toast"></div>
-
   <script>
-    function toast(msg) {
-      var t = document.getElementById('toast')
-      t.textContent = msg
-      t.classList.add('show')
-      setTimeout(function () { t.classList.remove('show') }, 1500)
-    }
     /* ---------- 拖动说明 ----------
        拖动由 sketch-module-web-view 内置机制处理：元素标 data-app-region="drag"
        （见 .bar / .logo），库按住后以系统 60fps 移动窗口；按钮标 no-drag。
@@ -317,6 +348,22 @@
       }
     })
 
+    /* ---------- 抽屉高度自适应 ----------
+       显示后把 #dwrap 的真实内容高度回报插件，由插件缩窗口；
+       固定的初始高度只用作首帧占位（收到实测值后立即校正）。 */
+    var DW_PAD = 20   // .drawer 上下 padding
+    var DW_LINE = 1   // .drawer 上边框
+    function reportDrawerHeight() {
+      try {
+        var wrap = document.getElementById('dwrap')
+        if (!wrap) return
+        var h = wrap.offsetHeight + DW_PAD + DW_LINE
+        if (h === window.__lastDrawerH) return
+        window.__lastDrawerH = h
+        window.postMessage('drawerHeight', String(h))
+      } catch (e) { /* ignore */ }
+    }
+
     /* ---------- 插件侧调用：切换抽屉显示 ---------- */
     window.__setDrawer = function (section) {
       var drawer = document.getElementById('drawer')
@@ -328,6 +375,17 @@
         el.classList.toggle('active', el.getAttribute('data-drawer') === section)
       })
       drawer.classList.toggle('visible', !!section)
+      document.body.classList.toggle('drawer-open', !!section)
+      window.__lastDrawerH = 0
+      if (!section) return
+      // 下一帧量：此时 display 已生效、布局已完成重排
+      requestAnimationFrame(reportDrawerHeight)
+    }
+
+    /* ---------- 插件侧调用：写入版本号（设置抽屉页脚） ---------- */
+    window.__setVersion = function (v) {
+      var el = document.getElementById('verLine')
+      if (el) el.textContent = 'v' + v
     }
 
     /* ---------- 图形分割 ---------- */
@@ -371,6 +429,8 @@
           '<span class="del" title="从色板移除" onclick="event.stopPropagation(); runAction(\'removeColor\',\'' + c + '\')">×</span></div>'
       })
       mc.innerHTML = mh || '<span class="empty">还没有收藏颜色，选中图层后点下方按钮添加</span>'
+      // 色板数据是插件异步推来的，渲染完高度会变 → 重新量一次让窗口跟上
+      requestAnimationFrame(reportDrawerHeight)
     }
   </script>
 </body>

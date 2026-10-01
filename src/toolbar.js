@@ -10,6 +10,7 @@ import { unlockAll } from './unlock.js'
 import { requestPalette, addSelectedColor, removeColor, copyColor } from './palette.js'
 import { setPanel, getPanel } from './panel-ref.js'
 import { attachFollow } from './follow.js'
+import { VERSION } from './version.js'
 import help from './help.js'
 
 // 换代标识：避免旧版 remembersWindowFrame 记忆的位置覆盖定位逻辑
@@ -54,13 +55,17 @@ function dispatchRun(payloadJson) {
 const STYLE_KEY = 'inkline.barStyle'
 const BAR_H = 56
 const W = 832 // 两种显示模式的按钮同宽，工具栏等长（新增「解锁」后又多一格 44+2）
+// 抽屉初始高度（首帧占位）：展开瞬间先给个差不多的尺寸，
+// 下一帧收到 HTML 实测的内容高度后立即校正 —— 固定高度会导致留白或裁切
 const DRAWER_H = {
   mockText: 128,
   mockImg: 96,
   palette: 320,
   slice: 104,
-  settings: 112
+  settings: 176
 }
+const DRAWER_MIN = 88
+const DRAWER_MAX = 460
 
 function readBarStyle() {
   try {
@@ -104,6 +109,8 @@ export default function () {
   }
 
   let currentDrawer = null
+  // 最近一次按实测内容校正过的抽屉高度（去重，避免重复 resize 抖动）
+  let lastDrawerH = 0
   let browserWindow = null
 
   // 取当前窗口顶边（自上而下）。用户拖动后坐标会变，必须实时读，不能缓存
@@ -128,19 +135,25 @@ export default function () {
     if (!browserWindow) return
     currentDrawer = section
     const h = section ? BAR_H + (DRAWER_H[section] || 120) : BAR_H
+    lastDrawerH = 0
     resizeTo(W, h)
     try {
       browserWindow.webContents.executeJavaScript('window.__setDrawer(' + JSON.stringify(section) + ')')
     } catch (e) { /* ignore */ }
   }
 
-  // 切换 图标/图标+文字 模式：持久化 + 变更窗口宽度
+  // 切换 图标/图标+文字 模式：持久化 + 顶边重新锚定。
+  // 注意不改窗口高度：抽屉展开时高度是 HTML 实测的，按常量表回算会跳一下
   function setBarStyle(mode) {
     try {
       NSUserDefaults.standardUserDefaults().setObject_forKey_(mode, STYLE_KEY)
     } catch (e) { /* ignore */ }
     barStyle = mode === 'icon' ? 'icon' : 'text'
-    resizeTo(W, currentDrawer ? BAR_H + (DRAWER_H[currentDrawer] || 120) : BAR_H)
+    try {
+      resizeTo(W, browserWindow.getBounds().height)
+    } catch (e) {
+      resizeTo(W, currentDrawer ? BAR_H + (DRAWER_H[currentDrawer] || 120) : BAR_H)
+    }
     try {
       browserWindow.webContents.executeJavaScript('window.__setBarStyle(' + JSON.stringify(barStyle) + ')')
     } catch (e) { /* ignore */ }
@@ -212,6 +225,15 @@ export default function () {
     }
   })
 
+  // HTML 实测的抽屉内容高度 → 按内容伸缩窗口（setDrawer 里的固定值只是首帧占位）
+  webContents.on('drawerHeight', function (h) {
+    if (!currentDrawer) return
+    const n = Math.round(Number(h))
+    if (!isFinite(n) || n <= 0 || n === lastDrawerH) return
+    lastDrawerH = n
+    resizeTo(W, BAR_H + Math.min(DRAWER_MAX, Math.max(DRAWER_MIN, n)))
+  })
+
   browserWindow.once('ready-to-show', function () {
     browserWindow.show()
     // 显式提到浮动层级之上（比默认 floating 更高一级），确保永远浮在 Sketch 主窗口之上
@@ -219,9 +241,12 @@ export default function () {
     try { browserWindow.moveTop() } catch (e) { /* ignore */ }
     // 显示后按同一坐标语义二次定位，防止系统默认位置覆盖
     try { browserWindow.setPosition(Math.round(x), Math.round(topY + BAR_H), false) } catch (e) { /* ignore */ }
-    // 应用保存的显示模式
+    // 应用保存的显示模式 + 写入版本号（设置抽屉页脚）
     try {
       browserWindow.webContents.executeJavaScript('window.__setBarStyle(' + JSON.stringify(barStyle) + ')')
+    } catch (e) { /* ignore */ }
+    try {
+      browserWindow.webContents.executeJavaScript('window.__setVersion(' + JSON.stringify(VERSION) + ')')
     } catch (e) { /* ignore */ }
   })
 
