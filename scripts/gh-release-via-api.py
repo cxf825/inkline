@@ -23,6 +23,7 @@ import argparse
 import base64
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -30,6 +31,16 @@ import urllib.request
 
 API = 'https://api.github.com'
 UPLOADS = 'https://uploads.github.com'
+
+
+def unquote_git_path(p):
+    """还原 git ls-tree / status 输出里被 core.quotePath 转义的非 ASCII 路径"""
+    if p.startswith('"') and p.endswith('"') and len(p) >= 2:
+        b = p[1:-1].encode('latin-1')
+        b = re.sub(rb'\\([0-7]{3})', lambda m: bytes([int(m.group(1), 8)]), b)
+        b = b.replace(b'\\\\', b'\\').replace(b'\\"', b'"').replace(b'\\t', b'\t').replace(b'\\n', b'\n')
+        return b.decode('utf-8')
+    return p
 
 
 def http(method, url, token, payload=None, raw=None, ctype='application/json', timeout=300):
@@ -87,6 +98,7 @@ def main():
     for line in git('ls-tree', '-r', 'HEAD').splitlines():
         meta, path = line.split('\t', 1)
         mode, typ, sha = meta.split()
+        path = unquote_git_path(path)
         local[path] = (sha, mode)
 
     changed = [p for p in local if remote.get(p) != local[p][0]]
