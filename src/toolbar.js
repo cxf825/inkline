@@ -6,6 +6,7 @@ import { openIconLibrary } from './iconfont.js'
 import { mockText, mockTextCustom, mockImage, chooseImageDir, openWordsEditor } from './mock.js'
 import { exportSlices } from './assets.js'
 import { runSlice } from './slice.js'
+import { openCharts } from './chart.js'
 import { unlockAll } from './unlock.js'
 import { requestPalette, addSelectedColor, removeColor, copyColor } from './palette.js'
 import { setPanel, getPanel } from './panel-ref.js'
@@ -27,6 +28,7 @@ const ACTIONS = {
   exportSpec: exportSpec,
   exportSlices: exportSlices,
   iconLibrary: openIconLibrary,
+  openCharts: openCharts,
   help: help
 }
 
@@ -54,7 +56,9 @@ function dispatchRun(payloadJson) {
 // 显示模式：text = 图标+文字（默认），icon = 仅图标；窗口宽度不同
 const STYLE_KEY = 'inkline.barStyle'
 const BAR_H = 56
-const W = 832 // 两种显示模式的按钮同宽，工具栏等长（新增「解锁」后又多一格 44+2）
+const W = 896 // 首帧估算宽（页面 load 后会实测回报 barWidth，收到后收窄到正好）
+// 实测内容宽度（barWidth 消息回传后更新）；resize 一律用 CUR_W，不再用估算常量
+let CUR_W = W
 // 抽屉初始高度（首帧占位）：展开瞬间先给个差不多的尺寸，
 // 下一帧收到 HTML 实测的内容高度后立即校正 —— 固定高度会导致留白或裁切
 const DRAWER_H = {
@@ -136,7 +140,7 @@ export default function () {
     currentDrawer = section
     const h = section ? BAR_H + (DRAWER_H[section] || 120) : BAR_H
     lastDrawerH = 0
-    resizeTo(W, h)
+    resizeTo(CUR_W, h)
     try {
       browserWindow.webContents.executeJavaScript('window.__setDrawer(' + JSON.stringify(section) + ')')
     } catch (e) { /* ignore */ }
@@ -150,9 +154,9 @@ export default function () {
     } catch (e) { /* ignore */ }
     barStyle = mode === 'icon' ? 'icon' : 'text'
     try {
-      resizeTo(W, browserWindow.getBounds().height)
+      resizeTo(CUR_W, browserWindow.getBounds().height)
     } catch (e) {
-      resizeTo(W, currentDrawer ? BAR_H + (DRAWER_H[currentDrawer] || 120) : BAR_H)
+      resizeTo(CUR_W, currentDrawer ? BAR_H + (DRAWER_H[currentDrawer] || 120) : BAR_H)
     }
     try {
       browserWindow.webContents.executeJavaScript('window.__setBarStyle(' + JSON.stringify(barStyle) + ')')
@@ -201,7 +205,7 @@ export default function () {
         UI.alert('Inkline 出错了', String(e && e.message ? e.message : e))
       }
       // 直接动作（标注/导出等）执行后收起抽屉，避免抽屉挡住画布
-      if (name !== 'iconLibrary' && name !== 'help') setDrawer(null)
+      if (name !== 'iconLibrary' && name !== 'help' && name !== 'openCharts') setDrawer(null)
     }
   })
   webContents.on('run', function (payloadJson) {
@@ -226,12 +230,22 @@ export default function () {
   })
 
   // HTML 实测的抽屉内容高度 → 按内容伸缩窗口（setDrawer 里的固定值只是首帧占位）
+  // HTML 实测的工具栏内容宽度 → 窗口收窄到正好（防关闭键被裁 / 右侧大空隙）
+  webContents.on('barWidth', function (w) {
+    const n = Math.round(Number(w))
+    if (!isFinite(n) || n < 400 || n > 2000 || n === CUR_W) return
+    CUR_W = n
+    try {
+      resizeTo(CUR_W, browserWindow.getBounds().height)
+    } catch (e) { /* ignore */ }
+  })
+
   webContents.on('drawerHeight', function (h) {
     if (!currentDrawer) return
     const n = Math.round(Number(h))
     if (!isFinite(n) || n <= 0 || n === lastDrawerH) return
     lastDrawerH = n
-    resizeTo(W, BAR_H + Math.min(DRAWER_MAX, Math.max(DRAWER_MIN, n)))
+    resizeTo(CUR_W, BAR_H + Math.min(DRAWER_MAX, Math.max(DRAWER_MIN, n)))
   })
 
   browserWindow.once('ready-to-show', function () {

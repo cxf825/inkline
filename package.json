@@ -1,6 +1,6 @@
 {
   "name": "inkline",
-  "version": "0.5.12",
+  "version": "0.5.22",
   "description": "墨斗·Inkline — Sketch 标注 / 交付 / 素材插件（Kitchen + Sketch Measure 组合体）",
   "skpm": {
     "name": "墨斗·Inkline",
@@ -12,7 +12,7 @@
     ]
   },
   "scripts": {
-    "build": "skpm-build",
+    "build": "skpm-build && rm -f inkline.sketchplugin/Contents/Sketch/*.map",
     "watch": "skpm-watch"
   },
   "devDependencies": {

@@ -129,7 +129,6 @@
       <div class="card" data-p="and" data-k="xhdpi"><span class="k">xhdpi</span><span class="v">2×</span></div>
       <div class="card" data-p="and" data-k="xxhdpi"><span class="k">xxhdpi</span><span class="v">3×</span></div>
       <div class="card" data-p="and" data-k="xxxhdpi"><span class="k">xxxhdpi</span><span class="v">4×</span></div>
-      <div class="card" data-p="and" data-k="svg"><span class="k">SVG</span><span class="v">矢量</span></div>
     </div>
   </div>
 
@@ -153,13 +152,14 @@
     function refresh() {
       var ios = pick('ios')
       var and = pick('and')
+      // SVG 只在 iOS 里出现一次（Android 不再重复提供）
       var fileCount = ios.filter(function (k) { return k !== 'svg' }).length
-      var densCount = and.filter(function (k) { return k !== 'svg' }).length
+      var densCount = and.length
       var total = fileCount + densCount
       var parts = []
       if (fileCount) parts.push('iOS ' + fileCount + ' 张')
       if (densCount) parts.push('Android ' + densCount + ' 张')
-      if (ios.indexOf('svg') > -1 || and.indexOf('svg') > -1) parts.push('SVG ×1')
+      if (ios.indexOf('svg') > -1) parts.push('SVG ×1')
       sum.textContent = total || parts.length ? '每个切图图层将输出：' + parts.join(' + ') : '请至少选择一种规格'
       go.disabled = total + parts.length === 0
     }

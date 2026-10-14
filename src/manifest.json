@@ -1,6 +1,6 @@
 {
   "compatibleVersion": 3,
-  "bundleVersion": 40,
+  "bundleVersion": 50,
   "name": "墨斗·Inkline",
   "author": "WorkBuddy",
   "description": "墨斗·Inkline — 标注、离线规范导出、Iconfont、Mock 数据填充",
@@ -76,6 +76,13 @@
       "handlers": { "run": "exportSlices" }
     },
     {
+      "name": "插入数据图表（柱状图 / 折线图 / 饼图）",
+      "identifier": "inkline.chart",
+      "script": "./chart.js",
+      "shortcut": "ctrl alt c",
+      "handlers": { "run": "openCharts" }
+    },
+    {
       "name": "图标库",
       "identifier": "inkline.icons",
       "script": "./iconfont.js",
@@ -115,6 +122,7 @@
       "inkline.note.add",
       "inkline.export.spec",
       "inkline.export.slices",
+      "inkline.chart",
       "inkline.icons",
       "inkline.mock.text",
       "inkline.mock.image",

@@ -483,7 +483,7 @@ export function openIconLibrary() {
 // 视口中心（页面坐标）：镜头当前看向的位置。
 // 经验公式（Sketch 插件社区）：真实滚动原点 = -scrollOrigin / zoomValue，
 // 视口尺寸 = 画布视图 frame / zoomValue。全程防御，取不到返回 null。
-function visibleCenter(doc) {
+export function visibleCenter(doc) {
   try {
     const sk = doc.sketchObject
     const view = typeof sk.currentView === 'function' ? sk.currentView() : sk.currentView
@@ -506,7 +506,7 @@ function visibleCenter(doc) {
 // ② 镜头中心所在的画板；镜头不在任何画板上时直接落在镜头中心（页面级）
 // ③ 聚焦画板（currentArtboard 兜底） ④ 第一个画板 ⑤ 当前页
 // 返回 { host, pt }：pt 为页面绝对坐标落点；null 表示用 host 自身中心
-function pickTarget(doc) {
+export function pickTarget(doc) {
   const boards = (doc.selectedPage.layers || []).filter(function (l) {
     return l.type === 'Artboard' || l.type === 'Frame'
   })

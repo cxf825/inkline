@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg:       #FAF9F6;
+    --bg-2:     #F1EEE6;
+    --line:     #E5E2DA;
+    --line-2:   #D8D4C8;
+    --ink:      #2B2B2B;
+    --ink-2:    #666666;
+    --ink-3:    #999999;
+    --accent:   #3868E6;
+    --accent-h: #2B55C4;
+    --accent-t: rgba(56, 104, 230, 0.10);
+    --r-sm:     6px;
+    --r-md:     8px;
+    --r-lg:     12px;
+    --ease:     0.12s ease;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px 0;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+  }
+  .head { display: flex; align-items: center; gap: 8px; flex: none; }
+  .head h1 { font-size: 14px; font-weight: 600; margin-right: 6px; }
+  .seg { display: flex; gap: 2px; background: var(--bg-2); border-radius: 10px; padding: 3px; }
+  .seg div {
+    padding: 7px 20px;
+    font-size: 13px;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    color: var(--ink-2);
+    transition: background var(--ease), color var(--ease);
+  }
+  .seg div.on { background: #fff; color: var(--accent); font-weight: 600; }
+  .head .tip { margin-left: auto; font-size: 14px; color: #666666; }
+
+  /* 第二行：样式 / 尺寸（宽高或直径/环宽/描边），随图表类型切换 */
+  .row2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .row2 .lbl { font-size: 14px; color: #666666; flex: none; }
+  .row2 .x { font-size: 14px; color: var(--ink-3); flex: none; }
+  .row2 .gap { width: 12px; flex: none; }
+  .row2 input.snum { width: 60px; }
+  /* 数字输入 + 内嵌清空钮（× 在输入框内部，无圆圈边框） */
+  .numwrap { position: relative; display: inline-flex; flex: none; }
+  .numwrap .snum { padding-right: 24px; }
+  .clr {
+    position: absolute;
+    right: 7px; top: 50%;
+    transform: translateY(-50%);
+    width: 14px; height: 14px;
+    line-height: 14px;
+    text-align: center;
+    color: var(--ink-3);
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .clr:hover { color: #C0392B; }
+
+  .cols { display: flex; gap: 14px; flex: none; margin-top: 12px; }
+  .col { min-width: 0; }
+  .col.left { width: 356px; flex: none; }
+  .col.right { flex: 1; }
+  .cap { font-size: 14px; color: #666666; margin-bottom: 7px; }
+
+  .rows { display: flex; flex-direction: column; gap: 6px; max-height: 176px; overflow-y: auto; padding-right: 2px; }
+  .row { display: flex; gap: 6px; align-items: center; }
+  .row .idx { width: 14px; font-size: 11px; color: var(--ink-3); flex: none; text-align: right; }
+  .row input {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 5px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: #fff;
+    color: var(--ink);
+    outline: none;
+    transition: border-color var(--ease);
+  }
+  .row input:focus { border-color: var(--accent); }
+  .row input.nm { flex: 1; min-width: 0; }
+  .row input.vl { width: 72px; }
+  .row .rm {
+    width: 20px; height: 20px; flex: none;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink-3);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all var(--ease);
+  }
+  .row .rm:hover { border-color: #C0392B; color: #C0392B; }
+  .row .rm:disabled { opacity: 0.35; cursor: default; }
+  .row .rm:disabled:hover { border-color: var(--line); color: var(--ink-3); }
+
+  .btns { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
+  .btn {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all var(--ease);
+  }
+  .btn:hover { background: var(--bg-2); }
+
+  #paste { margin-top: 9px; display: none; }
+  #paste textarea {
+    width: 100%;
+    height: 74px;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    resize: none;
+    outline: none;
+    color: var(--ink);
+  }
+  #paste textarea:focus { border-color: var(--accent); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 12px;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: #fff;
+    cursor: pointer;
+    transition: all var(--ease);
+  }
+  .chip:hover { background: var(--bg-2); }
+  .chip.on { background: var(--accent-t); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .grp { margin-bottom: 12px; }
+  .slider { display: flex; align-items: center; gap: 8px; }
+  .slider input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .slider b { font-size: 11px; color: var(--ink-2); font-weight: 600; width: 40px; text-align: right; flex: none; }
+  /* 数字输入框（所有可输数值处统一）：高度与数据表输入框一致，无 spinner */
+  .snum {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 5px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: #fff;
+    color: var(--ink);
+    text-align: right;
+    outline: none;
+    transition: border-color var(--ease);
+    -moz-appearance: textfield;
+  }
+  .snum::-webkit-outer-spin-button,
+  .snum::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .snum:focus { border-color: var(--accent); }
+  .slider .unit { font-size: 11px; color: var(--ink-2); flex: none; }
+
+  .pvwrap {
+    flex: 1;
+    min-height: 0;
+    margin-top: 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 8px;
+  }
+  .pvwrap svg { max-width: 100%; max-height: 100%; height: auto; }
+  .ph { font-size: 12px; color: var(--ink-3); }
+
+  .foot {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0 14px;
+  }
+  .foot .hintxt { font-size: 14px; color: #666666; }
+  #go {
+    margin-left: auto;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 20px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    transition: background var(--ease);
+  }
+  #go:hover { background: var(--accent-h); }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #DDD8CC; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>数据图表</h1>
+    <div class="seg" id="typeSeg">
+      <div data-val="bar">柱状图</div>
+      <div data-val="line">折线图</div>
+      <div data-val="pie">饼图</div>
+    </div>
+    <span class="tip">预览与插入结果完全一致</span>
+  </div>
+
+  <div class="row2" id="row2"></div>
+
+  <div class="cols">
+    <div class="col left">
+      <div class="cap">数据（类别 / 数值）</div>
+      <div class="rows" id="rows"></div>
+      <div class="btns">
+        <button class="btn" id="add">+ 添加一行</button>
+        <button class="btn" id="rnd">随机示例</button>
+        <button class="btn" id="pasteBtn">粘贴批量</button>
+        <button class="btn" id="clear">清空</button>
+      </div>
+      <div id="paste">
+        <textarea id="pasteTxt" placeholder="每行一条：类别,数值&#10;例：一月,120"></textarea>
+        <div class="btns">
+          <button class="btn" id="pasteOk">导入</button>
+          <button class="btn" id="pasteCancel">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col right">
+      <div class="grp" id="optColor"></div>
+      <div class="grp" id="optToggles"></div>
+    </div>
+  </div>
+
+  <div class="pvwrap" id="pv"><span class="ph">预览生成中…</span></div>
+
+  <div class="foot">
+    <span class="hintxt">落点：选中图层 → 镜头中心 → 当前画板 → 第一画板；插入后自动选中</span>
+    <button id="go">插入到画板</button>
+  </div>
+
+<script>
+  var spec = {
+    type: 'bar', orient: 'v', radius: 4, showValue: true, showGrid: true,
+    colorMode: 'mono', showPct: true, showLegend: true,
+    w: 480, h: 320, dia: 100, ring: 0, strokeWidth: 0,
+    rows: [
+      { name: '一月', value: 120 },
+      { name: '二月', value: 200 },
+      { name: '三月', value: 150 },
+      { name: '四月', value: 80 }
+    ]
+  }
+
+  var $ = function (id) { return document.getElementById(id) }
+  var rowsEl = $('rows')
+  var pvEl = $('pv')
+  var timer = null
+
+  function post(name, payload) {
+    try { window.postMessage(name, payload) } catch (e) { /* 浏览器直开时无通信桥 */ }
+  }
+  // 预览请求防抖：连续输入时只发最后一次
+  function refresh() {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(function () {
+      post('chartPreview', JSON.stringify(spec))
+    }, 120)
+  }
+
+  window.__setPreview = function (svg) {
+    pvEl.innerHTML = svg || '<span class="ph">预览生成失败</span>'
+  }
+
+  // ---------- 数据表 ----------
+  function rowsLimit() { return spec.type === 'pie' ? 8 : 12 }
+  function renderRows() {
+    rowsEl.innerHTML = ''
+    spec.rows.forEach(function (r, i) {
+      var row = document.createElement('div')
+      row.className = 'row'
+
+      var idx = document.createElement('span')
+      idx.className = 'idx'
+      idx.textContent = String(i + 1)
+
+      var nm = document.createElement('input')
+      nm.className = 'nm'
+      nm.value = r.name
+      nm.placeholder = '类别'
+      nm.oninput = function () { r.name = nm.value; refresh() }
+
+      var vl = document.createElement('input')
+      vl.className = 'vl snum'
+      vl.type = 'number'
+      vl.value = r.value
+      vl.placeholder = '数值'
+      vl.oninput = function () { r.value = Number(vl.value) || 0; refresh() }
+
+      var vlp = document.createElement('span')
+      vlp.className = 'numwrap'
+      var vlx = document.createElement('span')
+      vlx.className = 'clr'
+      vlx.textContent = '×'
+      vlx.title = '清空'
+      vlx.onclick = function () { vl.value = ''; r.value = 0; refresh(); vl.focus() }
+      vlp.appendChild(vl); vlp.appendChild(vlx)
+
+      var rm = document.createElement('button')
+      rm.className = 'rm'
+      rm.textContent = '−'
+      rm.title = '删除这一行'
+      rm.disabled = spec.rows.length <= 1
+      rm.onclick = function () {
+        if (spec.rows.length <= 1) return
+        spec.rows.splice(i, 1)
+        renderRows(); refresh()
+      }
+
+      row.appendChild(idx); row.appendChild(nm); row.appendChild(vlp); row.appendChild(rm)
+      rowsEl.appendChild(row)
+    })
+  }
+
+  window.__setRows = function (rows) {
+    if (!Array.isArray(rows) || !rows.length) return
+    spec.rows = rows.map(function (r) { return { name: String(r.name), value: Number(r.value) || 0 } })
+    renderRows(); refresh()
+  }
+
+  $('add').onclick = function () {
+    if (spec.rows.length >= rowsLimit()) return
+    spec.rows.push({ name: '类别' + (spec.rows.length + 1), value: 100 })
+    renderRows(); refresh()
+  }
+  $('rnd').onclick = function () { post('chartRandom') }
+  $('clear').onclick = function () {
+    spec.rows = [{ name: '类别1', value: 100 }]
+    renderRows(); refresh()
+  }
+  $('pasteBtn').onclick = function () {
+    var p = $('paste')
+    p.style.display = p.style.display === 'block' ? 'none' : 'block'
+  }
+  $('pasteCancel').onclick = function () { $('paste').style.display = 'none' }
+  $('pasteOk').onclick = function () {
+    var lines = String($('pasteTxt').value || '').split('\n')
+    var out = []
+    lines.forEach(function (line) {
+      var s = line.trim()
+      if (!s) return
+      var parts = s.split(/[,，\t]+/)
+      if (parts.length < 2) return
+      var v = Number(String(parts[1]).replace(/[^\d.\-]/g, ''))
+      if (!isFinite(v)) return
+      out.push({ name: parts[0].trim(), value: v })
+    })
+    if (!out.length) return
+    spec.rows = out.slice(0, rowsLimit())
+    $('paste').style.display = 'none'
+    renderRows(); refresh()
+  }
+
+  // ---------- 样式选项 ----------
+  function chip(label, on, fn) {
+    var d = document.createElement('div')
+    d.className = 'chip' + (on ? ' on' : '')
+    d.textContent = label
+    d.onclick = fn
+    return d
+  }
+
+  // 第二行输入：样式 / 尺寸（随类型切换），输入的都是「图形本体」尺寸
+  // 数字输入统一带 × 清空钮；高度/字号与左侧数据表输入框一致
+  function numInput(min, max, step, val, oninput) {
+    var wrap = document.createElement('span')
+    wrap.className = 'numwrap'
+    var el = document.createElement('input')
+    el.className = 'snum'
+    el.type = 'number'
+    el.min = String(min); el.max = String(max); el.step = String(step)
+    el.value = String(val)
+    el.oninput = oninput
+    var x = document.createElement('span')
+    x.className = 'clr'
+    x.textContent = '×'
+    x.title = '清空'
+    x.onclick = function () { el.value = ''; el.focus() }
+    wrap.appendChild(el); wrap.appendChild(x)
+    return wrap
+  }
+  function lbl(txt) {
+    var s = document.createElement('span')
+    s.className = 'lbl'
+    s.textContent = txt
+    return s
+  }
+  function gap() {
+    var s = document.createElement('span')
+    s.className = 'gap'
+    return s
+  }
+
+  function renderRow2() {
+    var row = $('row2')
+    row.innerHTML = ''
+    var isPie = spec.type === 'pie'
+
+    if (spec.type === 'bar') {
+      row.appendChild(lbl('样式'))
+      row.appendChild(chip('竖向', spec.orient === 'v', function () { spec.orient = 'v'; renderRow2(); refresh() }))
+      row.appendChild(chip('横向', spec.orient === 'h', function () { spec.orient = 'h'; renderRow2(); refresh() }))
+      row.appendChild(gap())
+    }
+
+    row.appendChild(lbl('尺寸'))
+    if (isPie) {
+      row.appendChild(lbl('直径'))
+      row.appendChild(numInput(24, 1000, 2, spec.dia, function () {
+        var v = Number(this.value)
+        if (isFinite(v) && v > 0) { spec.dia = Math.min(1000, Math.max(24, v)); refresh() }
+      }))
+      row.appendChild(lbl('pt'))
+      row.appendChild(gap())
+      row.appendChild(lbl('环宽'))
+      row.appendChild(numInput(0, 1000, 1, spec.ring, function () {
+        var v = Number(this.value)
+        if (isFinite(v) && v >= 0) { spec.ring = Math.min(1000, Math.max(0, v)); refresh() }
+      }))
+      row.appendChild(lbl('pt'))
+      row.appendChild(gap())
+      row.appendChild(lbl('描边（白色）'))
+      row.appendChild(numInput(0, 8, 0.5, spec.strokeWidth, function () {
+        var v = Number(this.value)
+        if (isFinite(v) && v >= 0) { spec.strokeWidth = Math.min(8, Math.max(0, v)); refresh() }
+      }))
+      row.appendChild(lbl('pt'))
+    } else {
+      row.appendChild(lbl('宽'))
+      row.appendChild(numInput(100, 2000, 10, spec.w, function () {
+        var v = Number(this.value)
+        if (isFinite(v) && v > 0) { spec.w = Math.min(2000, Math.max(100, v)); refresh() }
+      }))
+      row.appendChild(lbl('pt ×'))
+      row.appendChild(lbl('高'))
+      row.appendChild(numInput(80, 1500, 10, spec.h, function () {
+        var v = Number(this.value)
+        if (isFinite(v) && v > 0) { spec.h = Math.min(1500, Math.max(80, v)); refresh() }
+      }))
+      row.appendChild(lbl('pt'))
+    }
+  }
+
+  function renderOpts() {
+    var isBar = spec.type === 'bar'
+    var isPie = spec.type === 'pie'
+    var isLine = spec.type === 'line'
+
+    renderRow2()
+
+    // 配色（饼图固定多彩，柱状图/折线图可选）
+    var o3 = $('optColor')
+    o3.innerHTML = ''
+    var cap2 = document.createElement('div')
+    cap2.className = 'cap'
+    cap2.textContent = isPie ? '配色（分段自动上色）' : '配色'
+    o3.appendChild(cap2)
+    var chips3 = document.createElement('div')
+    chips3.className = 'chips'
+    if (isPie) {
+      chips3.appendChild(chip('8 色多彩', true, function () {}))
+      chips3.appendChild(chip('图例', spec.showLegend, function () {
+        spec.showLegend = !spec.showLegend; renderOpts(); refresh()
+      }))
+    } else {
+      chips3.appendChild(chip('默认', spec.colorMode === 'mono', function () { spec.colorMode = 'mono'; renderOpts(); refresh() }))
+      chips3.appendChild(chip('8 色多彩', spec.colorMode === 'multi', function () { spec.colorMode = 'multi'; renderOpts(); refresh() }))
+      if (isBar) {
+        chips3.appendChild(chip('圆角柱', spec.radius > 0, function () {
+          spec.radius = spec.radius > 0 ? 0 : 4
+          renderOpts(); refresh()
+        }))
+      }
+    }
+    o3.appendChild(chips3)
+
+    // 开关
+    var o4 = $('optToggles')
+    o4.innerHTML = ''
+    var cap3 = document.createElement('div')
+    cap3.className = 'cap'
+    cap3.textContent = isPie ? '标注' : '标注与网格'
+    o4.appendChild(cap3)
+    var chips4 = document.createElement('div')
+    chips4.className = 'chips'
+    if (isPie) {
+      chips4.appendChild(chip('百分比标签', spec.showPct, function () {
+        spec.showPct = !spec.showPct; renderOpts(); refresh()
+      }))
+    } else {
+      chips4.appendChild(chip('数值标签', spec.showValue, function () {
+        spec.showValue = !spec.showValue; renderOpts(); refresh()
+      }))
+      chips4.appendChild(chip('网格线', spec.showGrid, function () {
+        spec.showGrid = !spec.showGrid; renderOpts(); refresh()
+      }))
+      chips4.appendChild(chip('图例', spec.showLegend, function () {
+        spec.showLegend = !spec.showLegend; renderOpts(); refresh()
+      }))
+    }
+    o4.appendChild(chips4)
+
+    // 类型段控件高亮
+    Array.prototype.forEach.call($('typeSeg').children, function (el) {
+      el.classList.toggle('on', el.getAttribute('data-val') === spec.type)
+    })
+  }
+
+  Array.prototype.forEach.call($('typeSeg').children, function (el) {
+    el.onclick = function () {
+      spec.type = el.getAttribute('data-val')
+      renderOpts(); renderRows(); refresh()
+    }
+  })
+
+  $('go').onclick = function () {
+    try { window.postMessage('chartInsert', JSON.stringify(spec)) } catch (e) { /* ignore */ }
+  }
+
+  // ---------- 启动 ----------
+  window.__setSpec = function (s) {
+    if (!s || typeof s !== 'object') return
+    spec = Object.assign(spec, s)
+    if (!Array.isArray(spec.rows) || !spec.rows.length) spec.rows = [{ name: '类别1', value: 100 }]
+    renderOpts(); renderRows(); refresh()
+  }
+
+  renderOpts()
+  renderRows()
+  refresh()
+  post('requestChartSpec')
+</script>
+</body>
+</html>
