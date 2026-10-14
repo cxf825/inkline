@@ -1,9 +1,10 @@
 {
   "compatibleVersion": 3,
-  "bundleVersion": 38,
-  "name": "Inkline",
+  "bundleVersion": 40,
+  "name": "墨斗·Inkline",
   "author": "WorkBuddy",
-  "description": "Inkline 墨斗 — 标注、离线规范导出、Iconfont、Mock 数据填充",
+  "description": "墨斗·Inkline — 标注、离线规范导出、Iconfont、Mock 数据填充",
+  "icon": "icon.png",
   "commands": [
     {
       "name": "打开 / 关闭工具栏",
@@ -68,7 +69,7 @@
       "handlers": { "run": "exportSpec" }
     },
     {
-      "name": "切图导出 (@1x/@2x/@3x + SVG)",
+      "name": "切图导出（iOS / Android / SVG）",
       "identifier": "inkline.export.slices",
       "script": "./assets.js",
       "shortcut": "ctrl alt e",
@@ -102,7 +103,7 @@
     }
   ],
   "menu": {
-    "title": "Inkline · 墨斗",
+    "title": "墨斗·Inkline",
     "items": [
       "inkline.toolbar",
       "inkline.mark.widths",

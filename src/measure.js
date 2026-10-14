@@ -9,6 +9,9 @@ const NOTE_BG = '#FFF3B0' // 便签黄
 const NOTE_BORDER = '#E8C558'
 const NOTE_TEXT = '#7A5C00'
 
+// 标注文字统一字号：10pt（Sketch 的 fontSize 单位即 pt）
+const FS = 10
+
 function mkText(page, str, x, y, color, fontSize) {
   const strVal = String(str)
   let t
@@ -20,7 +23,7 @@ function mkText(page, str, x, y, color, fontSize) {
   // 显式赋值：Sketch 2026 构造参数可能不生效，导致空文本
   try { t.text = strVal } catch (e) { /* ignore */ }
   t.style.fontFamily = 'PingFang SC'
-  t.style.fontSize = fontSize || 11
+  t.style.fontSize = fontSize || FS
   t.style.textColor = color
   t.name = PREFIX + 'label'
   let fitted = false
@@ -30,7 +33,7 @@ function mkText(page, str, x, y, color, fontSize) {
   } catch (e) { /* ignore */ }
   if (!fitted) {
     // 兜底：按字符数估算宽高
-    const fs = fontSize || 11
+    const fs = fontSize || FS
     let maxLen = 0
     strVal.split('\n').forEach(function (line) {
       let w = 0
@@ -59,7 +62,7 @@ function mkTextCenterY(page, str, x, cy, color, fontSize) {
 
 // 带描边的白底卡片（属性标注用）
 function mkPropCard(page, lines, x, y) {
-  const t = mkText(page, lines.join('\n'), x, y, C_PROP, 11)
+  const t = mkText(page, lines.join('\n'), x, y, C_PROP, FS)
   const pad = 6
   const card = new ShapePath({
     parent: page,
@@ -130,7 +133,7 @@ export function markWidths() {
     anns.push(mkLine(page, r.x, y, r.w, 1, C_SIZE))
     anns.push(mkLine(page, r.x, y - 4, 1, 9, C_SIZE))
     anns.push(mkLine(page, r.x + r.w - 1, y - 4, 1, 9, C_SIZE))
-    anns.push(mkTextCenter(page, Math.round(r.w), r.x + r.w / 2, y + 5, C_SIZE))
+    anns.push(mkTextCenter(page, Math.round(r.w) + 'pt', r.x + r.w / 2, y + 5, C_SIZE))
   })
   const g = new Group({ parent: page, layers: anns })
   g.name = PREFIX + '标注-宽度'
@@ -149,7 +152,7 @@ export function markHeights() {
     anns.push(mkLine(page, x, r.y, 1, r.h, C_SIZE))
     anns.push(mkLine(page, x - 4, r.y, 9, 1, C_SIZE))
     anns.push(mkLine(page, x - 4, r.y + r.h - 1, 9, 1, C_SIZE))
-    anns.push(mkTextCenterY(page, Math.round(r.h), x + 5, r.y + r.h / 2, C_SIZE))
+    anns.push(mkTextCenterY(page, Math.round(r.h) + 'pt', x + 5, r.y + r.h / 2, C_SIZE))
   })
   const g = new Group({ parent: page, layers: anns })
   g.name = PREFIX + '标注-高度'
@@ -195,7 +198,7 @@ export function markSpacings() {
     sides.forEach(function (s) {
       if (s.x2 - s.x1 < 1) return
       anns.push(mkLine(page, s.x1, s.y, s.x2 - s.x1, 1, C_SP))
-      anns.push(mkTextCenter(page, s.v, (s.x1 + s.x2) / 2, s.y + 5, C_SP))
+      anns.push(mkTextCenter(page, s.v + 'pt', (s.x1 + s.x2) / 2, s.y + 5, C_SP))
     })
     // 上、下（垂直线，图层水平居中）
     const vs = [
@@ -205,7 +208,7 @@ export function markSpacings() {
     vs.forEach(function (s) {
       if (s.y2 - s.y1 < 1) return
       anns.push(mkLine(page, s.x, s.y1, 1, s.y2 - s.y1, C_SP))
-      anns.push(mkTextCenterY(page, s.v, s.x + 5, (s.y1 + s.y2) / 2, C_SP))
+      anns.push(mkTextCenterY(page, s.v + 'pt', s.x + 5, (s.y1 + s.y2) / 2, C_SP))
     })
   } else {
     // 两两标注间距
@@ -222,19 +225,19 @@ export function markSpacings() {
         const x2 = Math.max(a.x, b.x)
         const y = (Math.max(a.y, b.y) + Math.min(a.y + a.h, b.y + b.h)) / 2
         anns.push(mkLine(page, x1, y, x2 - x1, 1, C_SP))
-        anns.push(mkTextCenter(page, Math.round(hgap), (x1 + x2) / 2, y + 5, C_SP))
+        anns.push(mkTextCenter(page, Math.round(hgap) + 'pt', (x1 + x2) / 2, y + 5, C_SP))
       } else if (vgap >= 0 && hOverlap > 0) {
         // 垂直间距
         const y1 = Math.min(a.y + a.h, b.y + b.h)
         const y2 = Math.max(a.y, b.y)
         const x = (Math.max(a.x, b.x) + Math.min(a.x + a.w, b.x + b.w)) / 2
         anns.push(mkLine(page, x, y1, 1, y2 - y1, C_SP))
-        anns.push(mkTextCenterY(page, Math.round(vgap), x + 5, (y1 + y2) / 2, C_SP))
+        anns.push(mkTextCenterY(page, Math.round(vgap) + 'pt', x + 5, (y1 + y2) / 2, C_SP))
       } else {
         // 不相邻：标注 dx/dy
         const dx = Math.round(Math.abs(a.x - b.x))
         const dy = Math.round(Math.abs(a.y - b.y))
-        anns.push(mkText(page, 'dx ' + dx + ' · dy ' + dy, Math.max(a.x, b.x), Math.max(a.y, b.y), C_SP))
+        anns.push(mkText(page, 'dx ' + dx + 'pt · dy ' + dy + 'pt', Math.max(a.x, b.x), Math.max(a.y, b.y), C_SP))
       }
     }
   }
@@ -259,7 +262,7 @@ export function markProperties() {
   layers.forEach(function (layer) {
     const r = absRect(layer)
     const st = layer.style
-    const lines = [layer.name, Math.round(r.w) + ' × ' + Math.round(r.h)]
+    const lines = [layer.name, Math.round(r.w) + 'pt × ' + Math.round(r.h) + 'pt']
     try {
       const fills = st.fills
         .filter(function (f) { return f.enabled !== false && f.fillType === 'Color' })
@@ -271,8 +274,8 @@ export function markProperties() {
       if (borders.length) lines.push('描边 ' + borders.join(' '))
       if (st.opacity < 1) lines.push('透明度 ' + Math.round(st.opacity * 100) + '%')
       if (layer.type === 'Text') {
-        lines.push((st.fontFamily || '') + ' ' + (st.fontSize || '') + 'px')
-        if (st.lineHeight) lines.push('行高 ' + st.lineHeight)
+        lines.push((st.fontFamily || '') + ' ' + (st.fontSize || '') + 'pt')
+        if (st.lineHeight) lines.push('行高 ' + st.lineHeight + 'pt')
         if (st.textColor) lines.push('颜色 ' + String(st.textColor).slice(0, 7))
       }
       try {
@@ -283,7 +286,7 @@ export function markProperties() {
         } else {
           cr = layer.sketchObject.cornerRadius()
         }
-        if (cr && cr > 0) lines.push('圆角 ' + Math.round(cr))
+        if (cr && cr > 0) lines.push('圆角 ' + Math.round(cr) + 'pt')
       } catch (e) { /* 该图层类型没有圆角属性 */ }
     } catch (e) { /* 忽略单图层属性读取失败 */ }
     mkPropCard(page, lines, r.x + r.w + 10, r.y).forEach(function (l) { anns.push(l) })

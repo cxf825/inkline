@@ -1,12 +1,14 @@
-# Inkline · 墨斗 🖌
+# 墨斗·Inkline 🖌
 
 > Sketch 标注 / 交付 / 素材插件 —— 在设计稿上「弹墨线」。
 
-Kitchen 与 Sketch Measure 两款经典插件已不再支持新版 Sketch，原有标注、切图、尺寸查看等能力无法继续使用。**Inkline・墨斗** 复刻并优化了这两款插件的核心交付能力，为 Sketch 用户提供一个稳定可用的替代方案。
+Kitchen 与 Sketch Measure 两款经典插件已不再支持新版 Sketch，原有标注、切图、尺寸查看等能力无法继续使用。**墨斗·Inkline** 复刻并优化了这两款插件的核心交付能力，为 Sketch 用户提供一个稳定可用的替代方案。
 
 - 全部功能**离线可用**，不依赖任何服务端
 - 数据只存在本地（`NSUserDefaults`），不上传、不联网同步
 - 兼容 Sketch 2026 及以上
+
+> 💡 本插件的**全部代码与界面均由 [WorkBuddy](https://www.workbuddy.cn) 开发完成** —— 从功能设计、代码实现、UI 打磨到构建发版，全程由 AI 协作完成。
 
 ---
 
@@ -15,9 +17,9 @@ Kitchen 与 Sketch Measure 两款经典插件已不再支持新版 Sketch，原�
 1. 从 [Releases](https://github.com/cxf825/inkline/releases) 下载最新的 `inkline-vX.Y.Z.sketchplugin.zip` 并解压
 2. 双击 `inkline.sketchplugin`，或 `Plugins → Manage Plugins → Install Plugin from Disk…` 选择它
    （装过旧版 Kitchen3 / Inkline 请先在插件管理里卸载）
-3. 重启 Sketch，菜单栏出现 `Plugins → Inkline · 墨斗`
+3. 重启 Sketch，菜单栏出现 `Plugins → 墨斗·Inkline`
 
-打开插件：菜单 `Plugins → Inkline · 墨斗 → 打开 / 关闭工具栏`，或快捷键 **⌃⌘B**。
+打开插件：菜单 `Plugins → 墨斗·Inkline → 打开 / 关闭工具栏`，或快捷键 **⌃⌘B**。
 
 ---
 
@@ -25,7 +27,7 @@ Kitchen 与 Sketch Measure 两款经典插件已不再支持新版 Sketch，原�
 
 ### 1. 悬浮工具栏面板
 
-Sketch Measure 式的横向悬浮条，常驻画布上方。按住「墨」Logo 拖动位置，跟随 Sketch 窗口显示/隐藏，始终置顶不被画布遮挡。
+Sketch Measure 式的横向悬浮条，常驻画布上方。按住左上角 Logo 拖动位置，跟随 Sketch 窗口显示/隐藏，始终置顶不被画布遮挡。
 
 点击「文本」「图片」「色板」「分割」「设置」会向下展开抽屉；抽屉高度按内容自动伸缩，再点一次收起。
 
@@ -55,7 +57,10 @@ Sketch Measure 式的横向悬浮条，常驻画布上方。按住「墨」Logo 
 
 ### 5. 切图导出
 
-选中图层批量导出 **PNG @1x / @2x / @3x**，矢量图层额外导出 **SVG**。
+选中图层后弹出**规格选择窗口**，勾选需要的平台与倍率，再选目录导出（选择会被记住，下次打开即用）：
+
+- **iOS**：@1x / @2x / @3x（`name@2x.png` 标准命名）+ SVG
+- **Android**：ldpi 0.75× / mdpi 1× / hdpi 1.5× / xhdpi 2× / xxhdpi 3× / xxxhdpi 4×（输出到 `drawable-*` 目录，文件名统一 `name.png`）+ SVG
 
 - 多选且同属一个编组/画板时，自动按该编组名建立子文件夹
 - 单选整个编组时，子文件夹取编组自身名称
@@ -124,6 +129,10 @@ Sketch Measure 式的横向悬浮条，常驻画布上方。按住「墨」Logo 
 ## 更新日志
 
 完整版本历史见 [Releases](https://github.com/cxf825/inkline/releases)。
+
+**v0.5.12**：全新 Logo（白底圆角 + 蓝渐变墨滴，同步工具栏 / 图标库 / 离线规范页 / 插件菜单图标）；插件更名为「墨斗·Inkline」；插件设置面板显示自定义图标。
+
+**v0.5.11**：标注数值统一带 `pt` 单位、标注字号调整为 10pt；切图导出改为弹窗选规格（iOS 四档 / Android 七档，平台图标标识，记忆上次选择）。
 
 **v0.5.10**：界面主色统一为品牌蓝 `#3868E6`；设计令牌化；抽屉高度自适应；修复词库窗口僵尸引用；清理死代码与冗余轮询。
 

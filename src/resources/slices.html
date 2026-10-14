@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  /* 设计令牌：与工具栏面板同一支色板 */
+  :root {
+    --bg:       #FAF9F6;
+    --bg-hover: #F1EEE6;
+    --line:     #E5E2DA;
+    --ink:      #2B2B2B;
+    --ink-2:    #666666;
+    --ink-3:    #999999;
+    --accent:   #3868E6;
+    --accent-h: #2B55C4;
+    --accent-t: rgba(56, 104, 230, 0.10);
+    --r-md:     8px;
+    --r-lg:     12px;
+    --ease:     0.12s ease;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 16px 18px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  h2 { font-size: 14px; font-weight: 600; }
+  .hint { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+
+  .grp { margin-top: 16px; }
+  /* 平台标识：iOS 用苹果标，Android 用机器人标 */
+  .ghead { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; }
+  .pico { width: 17px; height: 17px; flex: none; color: var(--ink); }
+  .pico svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+  .gname { font-size: 13px; font-weight: 600; }
+  .gdesc { font-size: 11px; color: var(--ink-3); margin-left: auto; }
+
+  .cards { display: flex; flex-wrap: wrap; gap: 8px; }
+  .card {
+    width: 100px;
+    height: 60px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    position: relative;
+    transition: background var(--ease), border-color var(--ease);
+  }
+  .card:hover { border-color: #CFC9BC; }
+  .card .k { font-size: 14px; font-weight: 600; line-height: 1; }
+  .card .v { font-size: 11px; color: var(--ink-3); line-height: 1; }
+  .card.on { background: var(--accent-t); border-color: var(--accent); }
+  .card.on .k { color: var(--accent); }
+  .card.on .v { color: var(--accent); opacity: 0.75; }
+  /* 选中角标：右上角小勾 */
+  .card.on::after {
+    content: "";
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 6px; height: 6px;
+    border-radius: 3px;
+    background: var(--accent);
+  }
+
+  .foot { margin-top: auto; padding-top: 16px; display: flex; gap: 10px; }
+  button {
+    flex: 1;
+    padding: 10px 0;
+    font-size: 13px;
+    font-family: inherit;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease), border-color var(--ease);
+  }
+  button:hover { background: var(--bg-hover); }
+  #go {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  #go:hover { background: var(--accent-h); }
+  #go:disabled { opacity: 0.4; cursor: default; }
+  #sum { font-size: 11px; color: var(--ink-3); text-align: center; margin-top: 9px; }
+</style>
+</head>
+<body>
+  <h2>切图导出</h2>
+  <div class="hint">选择需要的尺寸规格，导出时按各平台的命名规范输出。</div>
+
+  <div class="grp">
+    <div class="ghead">
+      <span class="pico"><svg viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg></span>
+      <span class="gname">iOS</span>
+      <span class="gdesc">name.png / @2x / @3x</span>
+    </div>
+    <div class="cards">
+      <div class="card" data-p="ios" data-k="1"><span class="k">1×</span><span class="v">@1x</span></div>
+      <div class="card" data-p="ios" data-k="2"><span class="k">2×</span><span class="v">@2x</span></div>
+      <div class="card" data-p="ios" data-k="3"><span class="k">3×</span><span class="v">@3x</span></div>
+      <div class="card" data-p="ios" data-k="svg"><span class="k">SVG</span><span class="v">矢量</span></div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <div class="ghead">
+      <span class="pico"><svg viewBox="0 0 24 24"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-2.86-1.21-6.08-1.21-8.94 0L5.65 5.67c-.19-.29-.58-.38-.87-.2-.28.18-.37.54-.22.83l1.84 3.18C3.79 10.94 2 13.75 2 17h20c0-3.25-1.79-6.06-4.4-7.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg></span>
+      <span class="gname">Android</span>
+      <span class="gdesc">drawable-* 目录 / name.png</span>
+    </div>
+    <div class="cards">
+      <div class="card" data-p="and" data-k="ldpi"><span class="k">ldpi</span><span class="v">0.75×</span></div>
+      <div class="card" data-p="and" data-k="mdpi"><span class="k">mdpi</span><span class="v">1×</span></div>
+      <div class="card" data-p="and" data-k="hdpi"><span class="k">hdpi</span><span class="v">1.5×</span></div>
+      <div class="card" data-p="and" data-k="xhdpi"><span class="k">xhdpi</span><span class="v">2×</span></div>
+      <div class="card" data-p="and" data-k="xxhdpi"><span class="k">xxhdpi</span><span class="v">3×</span></div>
+      <div class="card" data-p="and" data-k="xxxhdpi"><span class="k">xxxhdpi</span><span class="v">4×</span></div>
+      <div class="card" data-p="and" data-k="svg"><span class="k">SVG</span><span class="v">矢量</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button id="cancel">取消</button>
+    <button id="go">选择目录并导出</button>
+  </div>
+  <div id="sum"></div>
+
+  <script>
+    var DEFAULT = { ios: ['1', '2', '3'], and: [] }
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.card'))
+    var go = document.getElementById('go')
+    var sum = document.getElementById('sum')
+
+    function pick(platform) {
+      return cards
+        .filter(function (c) { return c.getAttribute('data-p') === platform && c.classList.contains('on') })
+        .map(function (c) { return c.getAttribute('data-k') })
+    }
+    function refresh() {
+      var ios = pick('ios')
+      var and = pick('and')
+      var fileCount = ios.filter(function (k) { return k !== 'svg' }).length
+      var densCount = and.filter(function (k) { return k !== 'svg' }).length
+      var total = fileCount + densCount
+      var parts = []
+      if (fileCount) parts.push('iOS ' + fileCount + ' 张')
+      if (densCount) parts.push('Android ' + densCount + ' 张')
+      if (ios.indexOf('svg') > -1 || and.indexOf('svg') > -1) parts.push('SVG ×1')
+      sum.textContent = total || parts.length ? '每个切图图层将输出：' + parts.join(' + ') : '请至少选择一种规格'
+      go.disabled = total + parts.length === 0
+    }
+
+    cards.forEach(function (c) {
+      c.onclick = function () {
+        c.classList.toggle('on')
+        refresh()
+      }
+    })
+
+    // 插件侧回填上次的选择（首次打开用默认值）
+    window.__setSpec = function (spec) {
+      var s = (spec && typeof spec === 'object') ? spec : DEFAULT
+      cards.forEach(function (c) {
+        var p = c.getAttribute('data-p')
+        var k = c.getAttribute('data-k')
+        var list = Array.isArray(s[p]) ? s[p].map(String) : []
+        c.classList.toggle('on', list.indexOf(k) > -1)
+      })
+      refresh()
+    }
+
+    document.getElementById('cancel').onclick = function () {
+      try { window.postMessage('close', '') } catch (e) { /* 浏览器直开时无通信桥 */ }
+    }
+    go.onclick = function () {
+      var spec = { ios: pick('ios'), and: pick('and') }
+      try { window.postMessage('slicesGo', JSON.stringify(spec)) } catch (e) { /* 同上 */ }
+    }
+
+    // 首帧先按默认值渲染，插件随后回填真实记忆值
+    window.__setSpec(DEFAULT)
+    try { window.postMessage('requestSliceSpec', '') } catch (e) { /* 同上 */ }
+  </script>
+</body>
+</html>

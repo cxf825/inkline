@@ -5,7 +5,7 @@
 <style>
   /* ---------- 设计令牌 ----------
      全插件统一色板：品牌蓝 #3868E6（图标库 / iconfont 官网装修同一支），
-     印章红 #C0392B（Logo / 危险操作），暖灰阶做底与描边。
+     印章红 #C0392B（关闭 / 危险操作），暖灰阶做底与描边。
      画布标注色（标注红 / 间距蓝 / 属性紫）不在这里——那是图层颜色，与界面无关。 */
   :root {
     --bg:        #FAF9F6;
@@ -54,20 +54,20 @@
   }
   /* 抽屉展开时给工具栏补一条分隔线，把「工具条 / 面板」两层视觉分开 */
   body.drawer-open .bar { border-bottom-color: var(--line); }
-  /* 「墨」Logo = 主拖拽把手：面积大好按住；帮助入口已移到设置抽屉 */
+  /* 「墨斗」Logo = 主拖拽把手：面积大好按住；帮助入口已移到设置抽屉 */
   .logo {
     flex: none;
     width: 34px; height: 34px;
-    background: var(--seal);
     border-radius: var(--r-md);
-    color: #fff;
-    font-size: 16px;
-    line-height: 34px;
-    text-align: center;
-    font-weight: 600;
+    overflow: hidden;
+    /* logo 本体是白底圆角块，落在浅色工具栏上需要极轻描边+投影才不显浮 */
+    box-shadow: 0 0 0 1px rgba(31, 31, 31, 0.06), 0 1px 2px rgba(31, 31, 31, 0.10);
     margin-right: 8px;
     cursor: move;
   }
+  /* SVG 不吃鼠标事件：按住 Logo 拖动时事件目标保持是 .logo 本体
+     （库靠 data-app-region 判定拖动区，命中 SVG 子元素会有边界风险） */
+  .logo svg { display: block; width: 100%; height: 100%; pointer-events: none; }
   .tbtn {
     flex: none;
     display: flex;
@@ -224,7 +224,7 @@
     </svg>
 
   <div class="bar" data-app-region="drag">
-    <div class="logo" id="logoBtn" data-app-region="drag" title="按住拖动工具栏">墨</div>
+    <div class="logo" id="logoBtn" data-app-region="drag" title="按住拖动工具栏"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs>        <linearGradient x1="21.875%" y1="0%" x2="78.125%" y2="100%" id="linearGradient-1">            <stop stop-color="#2D91FF" offset="0%"></stop>            <stop stop-color="#0036E4" offset="100%"></stop>        </linearGradient>        <linearGradient x1="45.5%" y1="0%" x2="52.7614152%" y2="100%" id="linearGradient-2">            <stop stop-color="#2D91FF" offset="0%"></stop>            <stop stop-color="#0036E4" offset="100%"></stop>        </linearGradient>        <path d="M21,0 C22.6568542,0 24,1.34314575 24,3 L24,17 C24,18.6568542 22.6568542,20 21,20 C19.3431458,20 18,18.6568542 18,17 L18,3 C18,1.34314575 19.3431458,0 21,0 Z" id="path-3"></path>        <linearGradient x1="0%" y1="30.46875%" x2="100%" y2="69.53125%" id="linearGradient-5">            <stop stop-color="#2D91FF" offset="0%"></stop>            <stop stop-color="#0036E4" offset="100%"></stop>        </linearGradient>        <path d="M24,3 C24,9.627417 18.627417,15 12,15 C5.372583,15 0,9.627417 0,3 C0,1.34314575 1.34314575,0 3,0 C4.65685425,0 6,1.34314575 6,3 C6,6.3137085 8.6862915,9 12,9 C15.3137085,9 18,6.3137085 18,3 C18,1.34314575 19.3431458,0 21,0 C22.6568542,0 24,1.34314575 24,3 Z" id="path-6"></path>        <filter x="-11.5%" y="-18.3%" width="127.1%" height="143.3%" filterUnits="objectBoundingBox" id="filter-7">            <feOffset dx="0.5" dy="0.5" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>        </filter>        <path d="M24,3 C24,9.627417 18.627417,15 12,15 C5.372583,15 0,9.627417 0,3 C0,1.34314575 1.34314575,0 3,0 C4.65685425,0 6,1.34314575 6,3 C6,6.3137085 8.6862915,9 12,9 C15.3137085,9 18,6.3137085 18,3 C18,1.34314575 19.3431458,0 21,0 C22.6568542,0 24,1.34314575 24,3 Z" id="path-8"></path>        <linearGradient x1="43.3884298%" y1="0%" x2="56.6115702%" y2="100%" id="linearGradient-10">            <stop stop-color="#2D91FF" offset="0%"></stop>            <stop stop-color="#0036E4" offset="100%"></stop>        </linearGradient>        <rect id="path-11" x="2" y="3" width="4" height="11" rx="2"></rect>        <filter x="-68.8%" y="-25.0%" width="262.5%" height="159.1%" filterUnits="objectBoundingBox" id="filter-12">            <feOffset dx="0.5" dy="0.5" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.6 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>        </filter>        <linearGradient x1="45.5%" y1="0%" x2="54.5%" y2="100%" id="linearGradient-13">            <stop stop-color="#2D91FF" offset="0%"></stop>            <stop stop-color="#0036E2" offset="100%"></stop>        </linearGradient>    </defs><rect id="矩形-4" fill="#FFFFFF" x="0" y="0" width="40" height="40" rx="10"></rect><g transform="translate(8, 9)">                    <path d="M12,8 C13.6568542,8 15,6.65685425 15,5 C15,2.59314575 13.5,0 12,0 C10.5,0 9,2.59314575 9,5 C9,6.65685425 10.3431458,8 12,8 Z" id="椭圆形-7" fill="url(#linearGradient-1)"></path>                    <g id="蒙版" transform="translate(0, 2)">                        <mask id="mask-4" fill="white">                            <use xlink:href="#path-3"></use>                        </mask>                        <use fill="url(#linearGradient-2)" xlink:href="#path-3"></use>                        <g mask="url(#mask-4)">                            <use fill="black" fill-opacity="1" filter="url(#filter-7)" xlink:href="#path-6"></use>                            <use fill="url(#linearGradient-5)" fill-rule="evenodd" xlink:href="#path-6"></use>                        </g>                    </g>                    <g id="矩形-15" transform="translate(0, 2)">                        <mask id="mask-9" fill="white">                            <use xlink:href="#path-8"></use>                        </mask>                        <use id="蒙版" fill="url(#linearGradient-5)" xlink:href="#path-8"></use>                        <g mask="url(#mask-9)">                            <use fill="black" fill-opacity="1" filter="url(#filter-12)" xlink:href="#path-11"></use>                            <use fill="url(#linearGradient-10)" fill-rule="evenodd" xlink:href="#path-11"></use>                        </g>                    </g>                    <path d="M3,2 C4.65685425,2 6,3.34314575 6,5 L6,19 C6,20.6568542 4.65685425,22 3,22 C1.34314575,22 0,20.6568542 0,19 L0,5 C0,3.34314575 1.34314575,2 3,2 Z" id="矩形-13" fill="url(#linearGradient-13)"></path>                </g></svg></div>
     <div class="tbtn" data-app-region="no-drag" data-action="markWidths" title="标注宽度"><svg class="ic"><use href="#i-width"/></svg><span class="lbl">宽度</span></div>
     <div class="tbtn" data-app-region="no-drag" data-action="markHeights" title="标注高度"><svg class="ic"><use href="#i-height"/></svg><span class="lbl">高度</span></div>
     <div class="tbtn" data-app-region="no-drag" data-action="markSpacings" title="标注间距"><svg class="ic"><use href="#i-spacing"/></svg><span class="lbl">间距</span></div>
@@ -309,7 +309,7 @@
         <div class="chip" id="optIcon" data-run='{"name":"setBarStyle","arg":"icon"}'>仅图标</div>
         <div class="chip" data-run='{"name":"help"}' title="版本与功能说明">使用帮助…</div>
       </div>
-      <div class="drawer-foot"><span>Inkline · 墨斗</span><span id="verLine">v—</span></div>
+      <div class="drawer-foot"><span>墨斗·Inkline</span><span id="verLine">v—</span></div>
     </div>
     </div><!-- /#dwrap -->
   </div>

@@ -165,7 +165,7 @@ export default function () {
     height: BAR_H,
     x: Math.round(x),
     y: Math.round(topY + BAR_H),
-    title: 'Inkline · 墨斗',
+    title: '墨斗·Inkline',
     frame: false, // 无边框：没有标题栏，纯工具条，可按住空白处随意拖动
     resizable: false,
     movable: true,

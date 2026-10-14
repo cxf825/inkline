@@ -165,7 +165,7 @@ export function openWordsEditor() {
     height: 520,
     minWidth: 340,
     minHeight: 380,
-    title: 'Inkline · 自定义词库',
+    title: '墨斗·Inkline · 自定义词库',
     resizable: true,
     movable: true,
     alwaysOnTop: true,

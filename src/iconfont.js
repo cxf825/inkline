@@ -421,7 +421,7 @@ export function openIconLibrary() {
     height: 680,
     minWidth: 360,
     minHeight: 480,
-    title: 'Inkline 图标库',
+    title: '墨斗·Inkline 图标库',
     resizable: true,
     movable: true,
     // Kitchen 式：悬浮于 Sketch 之上，Sketch 失焦自动隐藏
