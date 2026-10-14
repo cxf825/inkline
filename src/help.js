@@ -1,9 +1,51 @@
-import { UI } from 'sketch'
+import BrowserWindow from 'sketch-module-web-view'
 import { VERSION } from './version.js'
+import { isLive } from './util.js'
+
+// 使用帮助：自绘窗口替代系统 UI.alert（原生弹窗图标被系统压到 64pt，Logo 太小）
+// 窗口标题已加入 follow.js 的 OUR_TITLES 白名单，最小化不会误触发工具栏隐藏
+
+let helpWin = null
+let helpSeq = 0
 
 export default function () {
-  UI.alert(
-    '墨斗·Inkline 🖌',
-    'Sketch 标注 / 交付 / 素材插件\n\n当前版本：v' + VERSION + '\n\n已上线功能：\n· 横向悬浮工具栏（Sketch Measure 式）\n· 尺寸 / 间距 / 属性标注\n· 注释便签\n· 离线 HTML 规范导出（含标注叠加层）\n· 切图导出（iOS @1x/@2x/@3x、Android 六档密度、SVG，\n  弹窗自选规格并记忆）\n· 数据图表（柱状图竖向/横向、折线图、饼图/环形图带描边，8 色多彩）\n· 图形分割（按列/行/间距/页边距切网格）\n· 图标库搜索插入（Iconify 本地 / iconfont 官网）\n· 一键解锁锁定图层\n· Mock 文本 / 图片填充 + 自定义词库\n· 色板管理（文档取色 + 我的色板）\n\n提示：点「文本」「图片」「色板」「分割」「设置」\n会向下展开抽屉；工具栏可按住空白处拖动；\n再点菜单可关闭。🎉'
-  )
+  if (helpWin) {
+    if (isLive(helpWin)) {
+      try { helpWin.show() } catch (e) { /* ignore */ }
+      return
+    }
+    helpWin = null // 僵尸引用：丢弃重建
+  }
+
+  const win = new BrowserWindow({
+    identifier: 'inkline.help.v1.' + (++helpSeq),
+    width: 480,
+    height: 640,
+    resizable: false,
+    movable: true,
+    title: '墨斗·Inkline · 使用帮助',
+    alwaysOnTop: true,
+    hidesOnDeactivate: true,
+    remembersWindowFrame: false
+  })
+  helpWin = win
+  win.on('closed', function () {
+    if (helpWin === win) helpWin = null
+  })
+
+  const wc = win.webContents
+  wc.on('requestHelp', function () {
+    try {
+      wc.executeJavaScript('window.__setVersion(' + JSON.stringify(VERSION) + ')')
+    } catch (e) { /* ignore */ }
+  })
+  wc.on('close', function () {
+    try { win.close() } catch (e) { /* ignore */ }
+  })
+
+  win.once('ready-to-show', function () {
+    win.show()
+    try { win.setAlwaysOnTop(true, 'floating', 1) } catch (e) { /* ignore */ }
+  })
+  win.loadURL(require('./resources/help.html'))
 }

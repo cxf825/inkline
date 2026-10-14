@@ -10,7 +10,7 @@
 // 不必等 DidMiniaturize（那是动画结束后约 0.3-0.5s 才发）。
 
 // 我们自己的窗口标题：这些窗口的最小化/关闭不应影响跟随判定
-const OUR_TITLES = ['墨斗·Inkline', '墨斗·Inkline 图标库', '墨斗·Inkline · 自定义词库', 'Inkline']
+const OUR_TITLES = ['墨斗·Inkline', '墨斗·Inkline 图标库', '墨斗·Inkline · 自定义词库', '墨斗·Inkline · 使用帮助', 'Inkline']
 
 export function docWindowState() {
   const docs = NSDocumentController.sharedDocumentController().documents()

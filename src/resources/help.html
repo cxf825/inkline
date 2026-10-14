@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg:       #FAF9F6;
+    --bg-hover: #F1EEE6;
+    --line:     #E5E2DA;
+    --ink:      #2B2B2B;
+    --ink-2:    #666666;
+    --ink-3:    #999999;
+    --accent:   #3868E6;
+    --accent-t: rgba(56, 104, 230, 0.10);
+    --r-md:     8px;
+    --r-lg:     12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+  }
+  /* ---- 顶部：大 Logo ---- */
+  .hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 26px 26px 20px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--bg) 100%);
+  }
+  .logo {
+    width: 88px;
+    height: 88px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(31, 31, 31, 0.08), 0 0 0 1px rgba(31, 31, 31, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+  .logo svg { width: 66px; height: 66px; display: block; }
+  .ttl { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+  .tag { font-size: 13px; color: var(--ink-2); margin-top: 5px; line-height: 1.45; }
+  .ver {
+    display: inline-block;
+    margin-top: 9px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-t);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  /* ---- 功能列表 ---- */
+  .list { flex: 1; overflow: auto; padding: 16px 26px 8px; }
+  .cap { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  ul { list-style: none; }
+  li {
+    position: relative;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    padding-left: 16px;
+    margin-bottom: 7px;
+  }
+  li::before {
+    content: "";
+    position: absolute;
+    left: 2px; top: 8px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.85;
+  }
+  li b { color: var(--ink); font-weight: 600; }
+  .tip {
+    margin: 12px 0 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--ink-3);
+    background: var(--bg-hover);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+  }
+  /* ---- 底部 ---- */
+  .foot { padding: 14px 26px 18px; border-top: 1px solid var(--line); display: flex; }
+  button {
+    flex: 1;
+    padding: 10px 0;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: var(--accent);
+    border: 0;
+    border-radius: var(--r-md);
+    cursor: pointer;
+  }
+  button:hover { background: #2B55C4; }
+  button:active { background: #2447A6; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo"><svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><linearGradient x1="27.7777778%" y1="0%" x2="72.2222222%" y2="100%" id="linearGradient-1"><stop stop-color="#2D91FF" offset="0%"></stop><stop stop-color="#0036E4" offset="100%"></stop></linearGradient><linearGradient x1="45.5%" y1="0%" x2="52.7614152%" y2="100%" id="linearGradient-2"><stop stop-color="#2D91FF" offset="0%"></stop><stop stop-color="#0036E4" offset="100%"></stop></linearGradient><rect id="path-3" x="18" y="0" width="6" height="20" rx="3"></rect><linearGradient x1="0%" y1="30.46875%" x2="100%" y2="69.53125%" id="linearGradient-5"><stop stop-color="#2D91FF" offset="0%"></stop><stop stop-color="#0036E4" offset="100%"></stop></linearGradient><path d="M24,3 C24,9.627417 18.627417,15 12,15 C5.372583,15 0,9.627417 0,3 C0,1.34314575 1.34314575,0 3,0 C4.65685425,0 6,1.34314575 6,3 C6,6.3137085 8.6862915,9 12,9 C15.3137085,9 18,6.3137085 18,3 C18,1.34314575 19.3431458,0 21,0 C22.6568542,0 24,1.34314575 24,3 Z" id="path-6"></path><filter x="-11.5%" y="-18.3%" width="127.1%" height="143.3%" filterUnits="objectBoundingBox" id="filter-7"><feOffset dx="0.5" dy="0.5" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset><feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur><feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix></filter><path d="M24,3 C24,9.627417 18.627417,15 12,15 C5.372583,15 0,9.627417 0,3 C0,1.34314575 1.34314575,0 3,0 C4.65685425,0 6,1.34314575 6,3 C6,6.3137085 8.6862915,9 12,9 C15.3137085,9 18,6.3137085 18,3 C18,1.34314575 19.3431458,0 21,0 C22.6568542,0 24,1.34314575 24,3 Z" id="path-8"></path><linearGradient x1="43.3884298%" y1="0%" x2="56.6115702%" y2="100%" id="linearGradient-10"><stop stop-color="#2D91FF" offset="0%"></stop><stop stop-color="#0036E4" offset="100%"></stop></linearGradient><rect id="path-11" x="2" y="3" width="4" height="11" rx="2"></rect><filter x="-68.8%" y="-25.0%" width="262.5%" height="159.1%" filterUnits="objectBoundingBox" id="filter-12"><feOffset dx="0.5" dy="0.5" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset><feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur><feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.6 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix></filter><linearGradient x1="45.5%" y1="0%" x2="54.5%" y2="100%" id="linearGradient-13"><stop stop-color="#2D91FF" offset="0%"></stop><stop stop-color="#0036E2" offset="100%"></stop></linearGradient></defs><rect id="矩形-4" fill="#FFFFFF" x="0" y="0" width="40" height="40" rx="10"></rect><path d="M20,18 C22.209139,18 24,16.209139 24,14 C24,11.3333333 21.3333333,10 20,6 C18.6666667,10 16,11.3333333 16,14 C16,16.209139 17.790861,18 20,18 Z" id="椭圆形-7" fill="url(#linearGradient-1)"></path><g id="蒙版" transform="translate(8, 12)"><mask id="mask-4" fill="white"><use xlink:href="#path-3"></use></mask><use fill="url(#linearGradient-2)" xlink:href="#path-3"></use><g mask="url(#mask-4)"><use fill="black" fill-opacity="1" filter="url(#filter-7)" xlink:href="#path-6"></use><use fill="url(#linearGradient-5)" fill-rule="evenodd" xlink:href="#path-6"></use></g></g><g id="矩形-15" transform="translate(8, 12)"><mask id="mask-9" fill="white"><use xlink:href="#path-8"></use></mask><use id="蒙版" fill="url(#linearGradient-5)" xlink:href="#path-8"></use><g mask="url(#mask-9)"><use fill="black" fill-opacity="1" filter="url(#filter-12)" xlink:href="#path-11"></use><use fill="url(#linearGradient-10)" fill-rule="evenodd" xlink:href="#path-11"></use></g></g><rect id="矩形-13" fill="url(#linearGradient-13)" x="8" y="12" width="6" height="20" rx="3"></rect></svg></div>
+    <div>
+      <div class="ttl">墨斗 · Inkline 🖌</div>
+      <div class="tag">Sketch 标注 / 交付 / 素材插件<br>在设计稿上「弹墨线」</div>
+      <div class="ver" id="ver">v—</div>
+    </div>
+  </div>
+
+  <div class="list">
+    <div class="cap">已上线功能</div>
+    <ul>
+      <li><b>横向悬浮工具栏</b>（Sketch Measure 式），跟随 Sketch 窗口显隐</li>
+      <li><b>尺寸 / 间距 / 属性标注</b>（统一 INK- 前缀，红蓝紫三色）</li>
+      <li><b>注释便签</b>：带编号的实现说明</li>
+      <li><b>离线 HTML 规范导出</b>（画板预览 + 标注叠加层 + 颜色/字体规范）</li>
+      <li><b>切图导出</b>：iOS @1x/@2x/@3x、Android 六档密度、SVG，弹窗自选规格并记忆</li>
+      <li><b>数据图表</b>：柱状图（竖/横）、折线图、饼图/环形图，8 色多彩，插入可编辑矢量图层</li>
+      <li><b>图形分割</b>：按列/行/间距/页边距切网格</li>
+      <li><b>图标库</b>：Iconify 全量搜索（中文关键词）/ iconfont 官网模式</li>
+      <li><b>一键解锁</b>当前页全部锁定图层</li>
+      <li><b>Mock 文本 / 图片填充</b> + 自定义词库</li>
+      <li><b>色板管理</b>：文档取色（按频次）+ 我的色板</li>
+    </ul>
+    <div class="tip">
+      提示：点「文本」「图片」「色板」「分割」「设置」会向下展开抽屉；<br>
+      工具栏可按住空白处拖动；再点菜单可关闭。🎉
+    </div>
+  </div>
+
+  <div class="foot"><button id="ok">好</button></div>
+
+  <script>
+    window.__setVersion = function (v) {
+      document.getElementById('ver').textContent = '当前版本 v' + v
+    }
+    try { window.postMessage('requestHelp', '') } catch (e) { /* 浏览器直开时无通信桥 */ }
+    document.getElementById('ok').onclick = function () {
+      try { window.postMessage('close', '') } catch (e) { /* 同上 */ }
+    }
+  </script>
+</body>
+</html>
