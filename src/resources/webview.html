@@ -256,10 +256,12 @@
     <div id="dwrap">
     <!-- Mock 文本 -->
     <div id="sec-mockText" style="display:none">
-      <div class="drawer-title">选中文本图层 → 点击填充</div>
+      <div class="drawer-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span>选中文本图层 → 点击填充</span>
+        <span class="chip" data-run='{"name":"editWords"}' title="编辑自定义词库" style="font-size:11px;padding:3px 10px;flex:none">编辑词库…</span>
+      </div>
       <div class="chips">
         <div class="chip" data-run='{"name":"mockTextCustom"}'>自定义词库</div>
-        <div class="chip" data-run='{"name":"editWords"}' title="编辑自定义词库">编辑词库…</div>
         <div class="chip" data-run='{"name":"mockText","arg":"smart"}'>智能匹配</div>
         <div class="chip" data-run='{"name":"mockText","arg":"name"}'>姓名</div>
         <div class="chip" data-run='{"name":"mockText","arg":"phone"}'>手机号</div>
@@ -272,13 +274,15 @@
     </div>
     <!-- Mock 图片 -->
     <div id="sec-mockImg" style="display:none">
-      <div class="drawer-title">选中矩形/形状/图片图层 → 点击填充</div>
+      <div class="drawer-title" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span>选中矩形/形状/图片图层 → 点击填充</span>
+        <span class="chip" data-run='{"name":"setImgDir"}' title="设置本地图片素材文件夹" style="font-size:11px;padding:3px 10px;flex:none">设置素材夹…</span>
+      </div>
       <div class="chips">
         <div class="chip" data-run='{"name":"mockImage","arg":"any"}'>任意图片</div>
         <div class="chip" data-run='{"name":"mockImage","arg":"portrait"}'>人像</div>
         <div class="chip" data-run='{"name":"mockImage","arg":"landscape"}'>风景</div>
         <div class="chip" data-run='{"name":"mockImage","arg":"local"}'>本地图片</div>
-        <div class="chip" data-run='{"name":"setImgDir"}' title="设置本地图片素材文件夹">设置素材夹…</div>
       </div>
     </div>
     <!-- 色板 -->
@@ -305,10 +309,12 @@
     </div>
     <!-- 设置 -->
     <div id="sec-settings" style="display:none">
-      <div class="drawer-title">按钮显示样式（保存后立即生效并记忆）</div>
+      <div class="drawer-title">按钮显示样式（点击即生效并记忆）</div>
       <div class="chips">
         <div class="chip" id="optText" data-run='{"name":"setBarStyle","arg":"text"}'>图标 + 文字</div>
         <div class="chip" id="optIcon" data-run='{"name":"setBarStyle","arg":"icon"}'>仅图标</div>
+      </div>
+      <div class="chips" style="margin-top:8px">
         <div class="chip" data-run='{"name":"help"}' title="版本与功能说明">使用帮助…</div>
       </div>
       <div class="drawer-foot"><span>墨斗·Inkline</span><span id="verLine">v—</span></div>
